@@ -19,8 +19,9 @@ class _AddPlantPageState extends State<AddPlantPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _humidityController = TextEditingController();
-  final _growthTimeController = TextEditingController();
+  final _wateringFrequencyController = TextEditingController();
+  final _temperatureRangeController = TextEditingController();
+  final _ownershipDurationController = TextEditingController();
   File? _selectedImage;
   bool _isUploading = false;
 
@@ -28,8 +29,9 @@ class _AddPlantPageState extends State<AddPlantPage> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _humidityController.dispose();
-    _growthTimeController.dispose();
+    _wateringFrequencyController.dispose();
+    _temperatureRangeController.dispose();
+    _ownershipDurationController.dispose();
     super.dispose();
   }
 
@@ -91,20 +93,20 @@ class _AddPlantPageState extends State<AddPlantPage> {
         print('Image uploaded successfully. URL: $downloadUrl');
         return downloadUrl;
       } else {
-        throw Exception('Görsel yükleme başarısız oldu: ${uploadTask.state}');
+        throw Exception('Image upload failed: ${uploadTask.state}');
       }
     } on FirebaseException catch (e) {
       print('Firebase Storage Error: ${e.code} - ${e.message}');
       if (e.code == 'unauthorized') {
-        throw Exception('Yetkilendirme hatası: Lütfen tekrar giriş yapın');
+        throw Exception('Authorization error: Please login again');
       } else if (e.code == 'canceled') {
-        throw Exception('Yükleme iptal edildi');
+        throw Exception('Upload canceled');
       } else {
-        throw Exception('Firebase hatası: ${e.message}');
+        throw Exception('Firebase error: ${e.message}');
       }
     } catch (e) {
       print('Unexpected error during upload: $e');
-      throw Exception('Görsel yüklenirken bir hata oluştu: $e');
+      throw Exception('An error occurred while uploading the image: $e');
     } finally {
       setState(() => _isUploading = false);
     }
@@ -120,28 +122,40 @@ class _AddPlantPageState extends State<AddPlantPage> {
 
         final name = _nameController.text.trim();
         final description = _descriptionController.text.trim();
-        final humidity = int.parse(_humidityController.text.trim());
-        final growthTime = _growthTimeController.text.trim();
+        final wateringFrequency = _wateringFrequencyController.text.trim();
+        final temperatureRange = _temperatureRangeController.text.trim();
+        final ownershipDuration = _ownershipDurationController.text.trim();
+
+        // Yükleme işlemi başladığında gösterge ekle
+        setState(() => _isUploading = true);
 
         await context.read<PlantCubit>().addPlant(
               name: name,
               description: description,
-              humidity: humidity,
-              growthTime: growthTime,
+              wateringFrequency: wateringFrequency,
+              temperatureRange: temperatureRange,
+              ownershipDuration: ownershipDuration,
               imageFile: _selectedImage,
               userId: currentUser.uid,
             );
 
+        // Yükleme işlemi bittiğinde göstergeyi kaldır
         if (mounted) {
-          Navigator.pop(context);
+          setState(() => _isUploading = false);
         }
+
+        // Navigasyon BlocListener tarafından yapılacak
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Hata: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // Hata durumunda göstergeyi kaldır
+        if (mounted) {
+          setState(() => _isUploading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -157,16 +171,22 @@ class _AddPlantPageState extends State<AddPlantPage> {
               backgroundColor: Colors.green,
             ),
           );
-          // Bitki ekledikten sonra listeyi yenile
+
+          // Refresh plant list after adding
           final userId = FirebaseAuth.instance.currentUser?.uid;
           if (userId != null) {
             context.read<PlantCubit>().getPlants(userId);
           }
-          Navigator.pop(context);
+
+          // Güvenli navigasyon için mounted kontrolü ekle
+          if (mounted) {
+            // Önce pop yapıp sonra plants sayfasına git
+            Navigator.of(context).pop();
+          }
         } else if (state.status == PlantStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? 'Bir hata oluştu'),
+              content: Text(state.errorMessage ?? 'An error occurred'),
               backgroundColor: Colors.red,
             ),
           );
@@ -225,22 +245,27 @@ class _AddPlantPageState extends State<AddPlantPage> {
                 const SizedBox(height: 16),
                 _CustomTextField(
                   controller: _descriptionController,
-                  label: 'Açıklama',
-                  hintText: 'Bitki hakkında detaylı bilgi',
+                  label: 'Description',
+                  hintText: 'Detailed information about the plant',
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
                 _CustomTextField(
-                  controller: _humidityController,
-                  label: 'Nem Oranı (%)',
-                  hintText: 'Örn: 90',
-                  keyboardType: TextInputType.number,
+                  controller: _wateringFrequencyController,
+                  label: 'Watering Frequency',
+                  hintText: 'E.g. Once a week',
                 ),
                 const SizedBox(height: 16),
                 _CustomTextField(
-                  controller: _growthTimeController,
-                  label: 'Yetişme Süresi',
-                  hintText: 'Örn: 4-5 Ay',
+                  controller: _temperatureRangeController,
+                  label: 'Temperature Range',
+                  hintText: 'E.g. 65-75°F (18-24°C)',
+                ),
+                const SizedBox(height: 16),
+                _CustomTextField(
+                  controller: _ownershipDurationController,
+                  label: 'Ownership Duration',
+                  hintText: 'E.g. 2 months',
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(

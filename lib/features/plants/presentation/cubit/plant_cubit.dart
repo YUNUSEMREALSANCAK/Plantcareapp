@@ -13,8 +13,9 @@ class PlantCubit extends Cubit<PlantState> {
   Future<void> addPlant({
     required String name,
     required String description,
-    required int humidity,
-    required String growthTime,
+    required String wateringFrequency,
+    required String temperatureRange,
+    required String ownershipDuration,
     File? imageFile,
     required String userId,
   }) async {
@@ -28,8 +29,9 @@ class PlantCubit extends Cubit<PlantState> {
       final plant = PlantModel(
         name: name,
         description: description,
-        humidity: humidity,
-        growthTime: growthTime,
+        wateringFrequency: wateringFrequency,
+        temperatureRange: temperatureRange,
+        ownershipDuration: ownershipDuration,
         imageUrl: imageUrl,
         userId: userId,
         createdAt: DateTime.now(),
@@ -61,6 +63,26 @@ class PlantCubit extends Cubit<PlantState> {
       emit(PlantState.loaded(plants));
     } catch (e) {
       print('Error in getPlants: $e');
+      emit(PlantState.error(e.toString()));
+    }
+  }
+
+  Future<void> deletePlant(String plantId) async {
+    try {
+      emit(PlantState.loading());
+
+      await _repository.deletePlant(plantId);
+
+      // Refresh the plants list after deletion
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        final plants = await _repository.getPlants(currentUser.uid);
+        emit(PlantState.loaded(plants));
+      } else {
+        emit(PlantState.success());
+      }
+    } catch (e) {
+      print('Error in deletePlant: $e');
       emit(PlantState.error(e.toString()));
     }
   }

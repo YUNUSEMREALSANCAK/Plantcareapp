@@ -8,8 +8,9 @@ class PlantModel {
   final String? id;
   final String name;
   final String description;
-  final int humidity;
-  final String growthTime;
+  final String wateringFrequency;
+  final String temperatureRange;
+  final String ownershipDuration;
   final String? imageUrl;
   final String userId;
 
@@ -23,8 +24,9 @@ class PlantModel {
     this.id,
     required this.name,
     required this.description,
-    required this.humidity,
-    required this.growthTime,
+    required this.wateringFrequency,
+    required this.temperatureRange,
+    required this.ownershipDuration,
     this.imageUrl,
     required this.userId,
     required this.createdAt,

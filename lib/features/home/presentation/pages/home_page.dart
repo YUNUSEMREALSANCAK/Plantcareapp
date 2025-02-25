@@ -41,6 +41,7 @@ class HomePage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
+                  //TODO: https://collectapi.com/tr/api/weather/hava-durumu-api ile hava durumu API si ekle
                   const Row(
                     children: [
                       Icon(

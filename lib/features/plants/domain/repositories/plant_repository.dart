@@ -74,39 +74,40 @@ class PlantRepository {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        throw Exception('Kullanıcı oturumu bulunamadı');
+        throw Exception('User session not found');
       }
 
       if (plant.userId != currentUser.uid) {
-        throw Exception('Geçersiz kullanıcı ID');
+        throw Exception('Invalid user ID');
       }
 
-      // Koleksiyonu kontrol et ve oluştur
+      // Check and create collection
       final plantsCollection = _firestore.collection('plants');
       print('Plants collection reference: ${plantsCollection.path}');
 
-      // Plant verilerini hazırla
+      // Prepare plant data
       final plantData = {
         'name': plant.name,
         'description': plant.description,
-        'humidity': plant.humidity,
-        'growth_time': plant.growthTime,
+        'watering_frequency': plant.wateringFrequency,
+        'temperature_range': plant.temperatureRange,
+        'ownership_duration': plant.ownershipDuration,
         'image_url': plant.imageUrl,
         'user_id': plant.userId,
         'created_at': Timestamp.fromDate(plant.createdAt),
       };
       print('Adding plant data: $plantData');
 
-      // Dokümanı ekle
+      // Add document
       final docRef = await plantsCollection.add(plantData);
       print('Document added with ID: ${docRef.id}');
     } on FirebaseException catch (e) {
       print('Firebase Error Code: ${e.code}');
       print('Firebase Error Message: ${e.message}');
-      throw Exception('Firebase hatası: ${e.message}');
+      throw Exception('Firebase error: ${e.message}');
     } catch (e) {
       print('Unexpected error: $e');
-      throw Exception('Bitki eklenirken bir hata oluştu');
+      throw Exception('An error occurred while adding the plant');
     }
   }
 
@@ -176,6 +177,57 @@ class PlantRepository {
     } catch (e) {
       print('Error in plants stream: $e');
       rethrow;
+    }
+  }
+
+  Future<void> deletePlant(String plantId) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('User session not found');
+      }
+
+      print('Deleting plant with ID: $plantId');
+
+      // Get the plant to check ownership
+      final plantDoc = await _firestore.collection('plants').doc(plantId).get();
+
+      if (!plantDoc.exists) {
+        throw Exception('Plant not found');
+      }
+
+      final plantData = plantDoc.data();
+      if (plantData == null || plantData['user_id'] != currentUser.uid) {
+        throw Exception('You do not have permission to delete this plant');
+      }
+
+      // Delete the plant document
+      await _firestore.collection('plants').doc(plantId).delete();
+      print('Plant deleted successfully');
+
+      // If there's an image, delete it from storage too
+      if (plantData['image_url'] != null) {
+        try {
+          // Extract the file path from the URL
+          final uri = Uri.parse(plantData['image_url']);
+          final pathSegments = uri.pathSegments;
+          if (pathSegments.length > 1) {
+            final storagePath = pathSegments.sublist(1).join('/');
+            await _storage.ref(storagePath).delete();
+            print('Plant image deleted from storage');
+          }
+        } catch (e) {
+          print('Error deleting image: $e');
+          // Continue even if image deletion fails
+        }
+      }
+    } on FirebaseException catch (e) {
+      print('Firebase Error Code: ${e.code}');
+      print('Firebase Error Message: ${e.message}');
+      throw Exception('Firebase error: ${e.message}');
+    } catch (e) {
+      print('Unexpected error in deletePlant: $e');
+      throw Exception('An error occurred while deleting the plant');
     }
   }
 }
