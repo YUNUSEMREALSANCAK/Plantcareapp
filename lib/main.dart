@@ -9,6 +9,10 @@ import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/plants/domain/repositories/plant_repository.dart';
 import 'features/plants/presentation/cubit/plant_cubit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'features/weather/domain/repositories/weather_repository.dart';
+import 'features/weather/presentation/cubit/weather_cubit.dart';
+import 'features/plant_recognition/domain/repositories/plant_recognition_repository.dart';
+import 'features/plant_recognition/presentation/cubit/plant_recognition_cubit.dart';
 
 void main() async {
   try {
@@ -18,7 +22,8 @@ void main() async {
     print('Env dosyası yükleniyor...');
     await dotenv.load(fileName: ".env");
     print('Env dosyası yüklendi');
-    print('API KEY: ${dotenv.env['FIREBASE_API_KEY']}');
+    print('Firebase API KEY: ${dotenv.env['FIREBASE_API_KEY']}');
+    print('OpenAI API KEY mevcut mu: ${dotenv.env['OPENAI_API_KEY'] != null}');
 
     print('Firebase başlatılıyor...');
     await Firebase.initializeApp(
@@ -28,6 +33,8 @@ void main() async {
 
     final authRepository = AuthRepository();
     final plantRepository = PlantRepository();
+    final weatherRepository = WeatherRepository();
+    final plantRecognitionRepository = PlantRecognitionRepository();
 
     runApp(
       MultiBlocProvider(
@@ -36,6 +43,14 @@ void main() async {
           BlocProvider(
             create: (context) => PlantCubit(plantRepository),
             lazy: false,
+          ),
+          BlocProvider(
+            create: (context) => WeatherCubit(weatherRepository),
+            lazy: false,
+          ),
+          BlocProvider(
+            create: (context) =>
+                PlantRecognitionCubit(plantRecognitionRepository),
           ),
         ],
         child: const MyApp(),

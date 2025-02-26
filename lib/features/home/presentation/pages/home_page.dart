@@ -6,9 +6,26 @@ import '../../../plants/presentation/pages/plants_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../core/utils/route_transitions.dart';
 import '../../../plants/presentation/pages/add_plant_page.dart';
+import '../../../weather/presentation/cubit/weather_cubit.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../../../plant_recognition/presentation/cubit/plant_recognition_cubit.dart';
+import '../../../plant_recognition/presentation/pages/plant_recognition_result_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Sayfa yüklendiğinde hava durumu verilerini al
+    context.read<WeatherCubit>().getWeather(city: 'Istanbul');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +58,6 @@ class HomePage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  //TODO: https://collectapi.com/tr/api/weather/hava-durumu-api ile hava durumu API si ekle
                   const Row(
                     children: [
                       Icon(
@@ -51,7 +67,7 @@ class HomePage extends StatelessWidget {
                       ),
                       SizedBox(width: 4),
                       Text(
-                        'Semampir, Kota Kediri',
+                        'Istanbul, Turkey',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -61,104 +77,79 @@ class HomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   // Weather Cards
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.water_drop,
-                                  color: Colors.white, size: 24),
-                              SizedBox(height: 8),
-                              Text(
-                                '212',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Rainfall',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.thermostat,
-                                  color: Colors.white, size: 24),
-                              SizedBox(height: 8),
-                              Text(
-                                '212°',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Temperature',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.opacity,
-                                  color: Colors.white, size: 24),
-                              SizedBox(height: 8),
-                              Text(
-                                '212',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Humidity',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                  BlocBuilder<WeatherCubit, WeatherState>(
+                    builder: (context, state) {
+                      if (state.status == WeatherStatus.loading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        );
+                      } else if (state.status == WeatherStatus.error) {
+                        return Row(
+                          children: [
+                            _WeatherCard(
+                              icon: Icons.water_drop,
+                              value: 'N/A',
+                              label: 'Rainfall',
+                            ),
+                            const SizedBox(width: 12),
+                            _WeatherCard(
+                              icon: Icons.thermostat,
+                              value: 'N/A',
+                              label: 'Temperature',
+                            ),
+                            const SizedBox(width: 12),
+                            _WeatherCard(
+                              icon: Icons.opacity,
+                              value: 'N/A',
+                              label: 'Humidity',
+                            ),
+                          ],
+                        );
+                      } else if (state.status == WeatherStatus.loaded &&
+                          state.weatherData != null &&
+                          state.weatherData!.isNotEmpty) {
+                        final weather =
+                            state.weatherData![0]; // Bugünün hava durumu
+                        return Row(
+                          children: [
+                            const SizedBox(width: 12),
+                            _WeatherCard(
+                              icon: Icons.thermostat,
+                              value: '${weather.degree}°',
+                              label: 'Temperature',
+                            ),
+                            const SizedBox(width: 12),
+                            _WeatherCard(
+                              icon: Icons.opacity,
+                              value: '${weather.humidity}%',
+                              label: 'Humidity',
+                            ),
+                          ],
+                        );
+                      } else {
+                        return Row(
+                          children: [
+                            _WeatherCard(
+                              icon: Icons.water_drop,
+                              value: 'N/A',
+                              label: 'Rainfall',
+                            ),
+                            const SizedBox(width: 12),
+                            _WeatherCard(
+                              icon: Icons.thermostat,
+                              value: 'N/A',
+                              label: 'Temperature',
+                            ),
+                            const SizedBox(width: 12),
+                            _WeatherCard(
+                              icon: Icons.opacity,
+                              value: 'N/A',
+                              label: 'Humidity',
+                            ),
+                          ],
+                        );
+                      }
+                    },
                   ),
                   const SizedBox(height: 32),
                   Text(
@@ -226,8 +217,34 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Yeni "Bitkini Tanı" butonu
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      final ImagePicker picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(
+                        source: ImageSource.gallery,
+                        maxWidth: 1024,
+                        maxHeight: 1024,
+                        imageQuality: 85,
+                      );
 
+                      if (image != null && mounted) {
+                        final imageFile = File(image.path);
+
+                        // Bitki tanıma işlemini başlat
+                        await context
+                            .read<PlantRecognitionCubit>()
+                            .recognizePlant(imageFile);
+
+                        // Sonuç sayfasına git
+                        if (mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const PlantRecognitionResultPage(),
+                            ),
+                          );
+                        }
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white.withOpacity(0.15),
@@ -297,6 +314,55 @@ class HomePage extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               label: 'Profile',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeatherCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+
+  const _WeatherCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
