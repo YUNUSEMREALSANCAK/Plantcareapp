@@ -65,6 +65,10 @@ dependencies:
   # Added from the code block
   intl: ^0.18.1
 
+  # Added from the code block
+  cached_network_image: ^3.3.0
+  flutter_displaymode: ^0.6.0  # Yüksek yenileme hızlı ekranlar için
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../plants/presentation/pages/plants_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../core/utils/route_transitions.dart';
