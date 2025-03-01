@@ -155,26 +155,31 @@ class _AddPlantPageState extends State<AddPlantPage> {
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
-        final currentUser = FirebaseAuth.instance.currentUser;
-        if (currentUser == null) {
-          throw Exception('User session not found');
-        }
-
-        final name = _nameController.text.trim();
-        final description = _descriptionController.text.trim();
-        final wateringFrequency = _getWateringDaysString();
-        final temperatureRange = _getTemperatureRangeString();
-        final ownershipDuration = _ownershipDurationController.text.trim();
-
-        // Yükleme işlemi başladığında gösterge ekle
         setState(() => _isUploading = true);
 
+        // Kullanıcı kontrolü
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser == null) {
+          throw Exception('Kullanıcı oturumu bulunamadı');
+        }
+
+        // Görsel yükleme
+        final imageUrl = await _uploadImage();
+
+        // Sıcaklık aralığı oluştur
+        final temperatureRange =
+            '${_minTempController.text}-${_maxTempController.text}°C';
+
+        // Sulama günlerini string'e çevir
+        final wateringFrequency = _getWateringDaysString();
+
+        // Bitki ekleme
         await context.read<PlantCubit>().addPlant(
-              name: name,
-              description: description,
+              name: _nameController.text,
+              description: _descriptionController.text,
               wateringFrequency: wateringFrequency,
               temperatureRange: temperatureRange,
-              ownershipDuration: ownershipDuration,
+              ownershipDuration: _ownershipDurationController.text,
               imageFile: _selectedImage,
               userId: currentUser.uid,
               wateringDays: _selectedWateringDays,
@@ -186,22 +191,27 @@ class _AddPlantPageState extends State<AddPlantPage> {
                   : int.tryParse(_maxTempController.text),
             );
 
-        // Yükleme işlemi bittiğinde göstergeyi kaldır
+        // Başarılı mesajı göster
         if (mounted) {
-          setState(() => _isUploading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bitki başarıyla eklendi')),
+          );
         }
 
-        // Navigasyon BlocListener tarafından yapılacak
+        // Önceki sayfaya dön
+        if (mounted) {
+          Navigator.pop(context, true); // true değeri ile dön (başarılı işlem)
+        }
       } catch (e) {
-        // Hata durumunda göstergeyi kaldır
+        print('Error in _submitForm: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Hata: ${e.toString()}')),
+          );
+        }
+      } finally {
         if (mounted) {
           setState(() => _isUploading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
         }
       }
     }

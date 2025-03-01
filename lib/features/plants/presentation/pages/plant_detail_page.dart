@@ -222,41 +222,59 @@ class PlantDetailPage extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: const Text(
-            'Delete Plant',
+            'Bitki Silinecek',
             style: TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: const Text(
-            'Are you sure you want to delete this plant? This action cannot be undone.',
+            'Bu bitkiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
             style: TextStyle(color: Colors.black87),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text(
-                'Cancel',
+                'İptal',
                 style: TextStyle(color: AppColors.primary),
               ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                if (plant.id != null) {
-                  context.read<PlantCubit>().deletePlant(plant.id!);
-                }
+                _deletePlant(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Delete'),
+              child: const Text('Sil'),
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _deletePlant(BuildContext context) async {
+    try {
+      // Silme işlemini başlat
+      await context.read<PlantCubit>().deletePlant(plant.id!);
+
+      // Başarılı mesajı göster
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitki başarıyla silindi')),
+      );
+
+      // Bitkilerim sayfasına geri dön
+      Navigator.pop(context);
+    } catch (e) {
+      // Hata mesajı göster
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: ${e.toString()}')),
+      );
+    }
   }
 }
 

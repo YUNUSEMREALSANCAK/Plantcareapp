@@ -11,6 +11,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../plant_recognition/presentation/cubit/plant_recognition_cubit.dart';
 import '../../../plant_recognition/presentation/pages/plant_recognition_result_page.dart';
+import '../../../plants/presentation/cubit/plant_cubit.dart';
+import '../../../plants/presentation/cubit/plant_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,17 +24,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final String _city = 'Istanbul';
+  final String _userName =
+      FirebaseAuth.instance.currentUser?.displayName ?? 'Kullanıcı';
+
   @override
   void initState() {
     super.initState();
-    // Sayfa yüklendiğinde hava durumu verilerini al
-    context.read<WeatherCubit>().getWeather(city: 'Istanbul');
+    _loadData();
+  }
+
+  void _loadData() {
+    // Hava durumu verilerini yükle
+    context.read<WeatherCubit>().getWeather(city: _city, lang: 'tr');
+
+    // Bitkileri yükle
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      context.read<PlantCubit>().getPlants(userId);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AuthCubit>().state.user;
-
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -52,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome ${user?.displayName ?? 'User'}!',
+                    'Welcome $_userName!',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -271,6 +287,119 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  // Bildirimler bölümü
+                  const Text(
+                    'Bildirimler',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Bildirimler listesi
+                  BlocBuilder<PlantCubit, PlantState>(
+                    builder: (context, plantState) {
+                      if (plantState.status == PlantStatus.loading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        );
+                      }
+
+                      if (plantState.plants == null ||
+                          plantState.plants!.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Henüz bildirim bulunmuyor. Bitki ekleyerek sulama ve sıcaklık bildirimlerini görüntüleyebilirsiniz.',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }
+
+                      // Bugünün gününü al (0: Pazartesi, 6: Pazar)
+                      final today = DateTime.now().weekday - 1;
+
+                      // Sulama bildirimleri
+                      final wateringNotifications = plantState.plants!
+                          .where((plant) =>
+                              plant.wateringDays.length > today &&
+                              plant.wateringDays[today])
+                          .map((plant) => _NotificationItem(
+                                icon: Icons.water_drop,
+                                title: '${plant.name} Sulama Zamanı',
+                                message:
+                                    'Bugün ${plant.name} bitkisini sulamanız gerekiyor.',
+                                color: Colors.blue.shade700,
+                              ))
+                          .toList();
+
+                      // Sıcaklık bildirimleri
+                      final temperatureNotifications = <_NotificationItem>[];
+
+                      // Hava durumu verilerini kontrol et
+                      final weatherState = context.watch<WeatherCubit>().state;
+                      if (weatherState.status == WeatherStatus.loaded &&
+                          weatherState.weatherData != null) {
+                        final currentTemp = double.tryParse(
+                                weatherState.weatherData!.first.degree) ??
+                            0;
+
+                        // Her bitki için sıcaklık kontrolü yap
+                        for (final plant in plantState.plants!) {
+                          if (plant.minTemperature != null &&
+                              plant.maxTemperature != null) {
+                            if (currentTemp < plant.minTemperature!) {
+                              temperatureNotifications.add(_NotificationItem(
+                                icon: Icons.thermostat,
+                                title: '${plant.name} için Düşük Sıcaklık',
+                                message:
+                                    'Mevcut sıcaklık (${currentTemp.toStringAsFixed(1)}°C), ${plant.name} için çok düşük. Minimum ${plant.minTemperature}°C olmalı.',
+                                color: Colors.blue.shade900,
+                              ));
+                            } else if (currentTemp > plant.maxTemperature!) {
+                              temperatureNotifications.add(_NotificationItem(
+                                icon: Icons.thermostat,
+                                title: '${plant.name} için Yüksek Sıcaklık',
+                                message:
+                                    'Mevcut sıcaklık (${currentTemp.toStringAsFixed(1)}°C), ${plant.name} için çok yüksek. Maksimum ${plant.maxTemperature}°C olmalı.',
+                                color: Colors.green.shade700,
+                              ));
+                            }
+                          }
+                        }
+                      }
+
+                      // Tüm bildirimleri birleştir
+                      final allNotifications = [
+                        ...wateringNotifications,
+                        ...temperatureNotifications
+                      ];
+
+                      if (allNotifications.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Bugün için bildirim bulunmuyor. Tüm bitkileriniz iyi durumda!',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        children: allNotifications,
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -366,6 +495,64 @@ class _WeatherCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Bildirim öğesi widget'ı
+class _NotificationItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final Color color;
+
+  const _NotificationItem({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.5), width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

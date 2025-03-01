@@ -43,19 +43,21 @@ class _PlantsPageState extends State<PlantsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseAuth.instance.currentUser?.reload();
-        if (mounted) {
-          context.read<PlantCubit>().getPlants(user.uid);
-        }
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-        );
-      }
-    });
+    _loadPlants();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Sayfaya her dönüşte bitkileri yeniden yükle
+    _loadPlants();
+  }
+
+  void _loadPlants() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      context.read<PlantCubit>().getPlants(currentUser.uid);
+    }
   }
 
   @override
@@ -124,16 +126,21 @@ class _PlantsPageState extends State<PlantsPage> {
           },
         ),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: AppColors.primary,
-          onPressed: () {
-            Navigator.push(
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.primary,
+          child: const Icon(Icons.add),
+          onPressed: () async {
+            // AddPlantPage'e git ve sonucu bekle
+            final result = await Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const AddPlantPage(),
-              ),
+              MaterialPageRoute(builder: (context) => const AddPlantPage()),
             );
+
+            // Eğer başarılı bir şekilde bitki eklendiyse (result == true), bitkileri yenile
+            if (result == true) {
+              _refreshPlants();
+            }
           },
-          child: const Icon(Icons.add, color: Colors.white),
         ),
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: AppColors.background,
