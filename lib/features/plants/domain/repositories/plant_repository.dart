@@ -95,6 +95,9 @@ class PlantRepository {
         'image_url': plant.imageUrl,
         'user_id': plant.userId,
         'created_at': Timestamp.fromDate(plant.createdAt),
+        'watering_days': plant.wateringDays,
+        'min_temperature': plant.minTemperature,
+        'max_temperature': plant.maxTemperature,
       };
       print('Adding plant data: $plantData');
 

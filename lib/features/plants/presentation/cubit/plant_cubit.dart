@@ -18,6 +18,17 @@ class PlantCubit extends Cubit<PlantState> {
     required String ownershipDuration,
     File? imageFile,
     required String userId,
+    List<bool> wateringDays = const [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    int? minTemperature,
+    int? maxTemperature,
   }) async {
     emit(PlantState.loading());
     try {
@@ -35,6 +46,9 @@ class PlantCubit extends Cubit<PlantState> {
         imageUrl: imageUrl,
         userId: userId,
         createdAt: DateTime.now(),
+        wateringDays: wateringDays,
+        minTemperature: minTemperature,
+        maxTemperature: maxTemperature,
       );
 
       await _repository.addPlant(plant);

@@ -19,19 +19,32 @@ class _AddPlantPageState extends State<AddPlantPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _wateringFrequencyController = TextEditingController();
-  final _temperatureRangeController = TextEditingController();
   final _ownershipDurationController = TextEditingController();
+  final _minTempController = TextEditingController();
+  final _maxTempController = TextEditingController();
+
   File? _selectedImage;
   bool _isUploading = false;
+
+  // Sulama günleri için
+  final List<String> _weekDays = [
+    'Pazartesi',
+    'Salı',
+    'Çarşamba',
+    'Perşembe',
+    'Cuma',
+    'Cumartesi',
+    'Pazar'
+  ];
+  final List<bool> _selectedWateringDays = List.filled(7, false);
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _wateringFrequencyController.dispose();
-    _temperatureRangeController.dispose();
     _ownershipDurationController.dispose();
+    _minTempController.dispose();
+    _maxTempController.dispose();
     super.dispose();
   }
 
@@ -112,6 +125,33 @@ class _AddPlantPageState extends State<AddPlantPage> {
     }
   }
 
+  // Seçili sulama günlerini string formatına dönüştür
+  String _getWateringDaysString() {
+    List<String> selectedDays = [];
+    for (int i = 0; i < _selectedWateringDays.length; i++) {
+      if (_selectedWateringDays[i]) {
+        selectedDays.add(_weekDays[i]);
+      }
+    }
+    return selectedDays.isEmpty ? 'Belirtilmedi' : selectedDays.join(', ');
+  }
+
+  // Sıcaklık aralığını string formatına dönüştür
+  String _getTemperatureRangeString() {
+    final minTemp = _minTempController.text.trim();
+    final maxTemp = _maxTempController.text.trim();
+
+    if (minTemp.isEmpty && maxTemp.isEmpty) {
+      return 'Belirtilmedi';
+    } else if (minTemp.isEmpty) {
+      return 'En fazla ${maxTemp}°C';
+    } else if (maxTemp.isEmpty) {
+      return 'En az ${minTemp}°C';
+    } else {
+      return '${minTemp}°C - ${maxTemp}°C';
+    }
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -122,8 +162,8 @@ class _AddPlantPageState extends State<AddPlantPage> {
 
         final name = _nameController.text.trim();
         final description = _descriptionController.text.trim();
-        final wateringFrequency = _wateringFrequencyController.text.trim();
-        final temperatureRange = _temperatureRangeController.text.trim();
+        final wateringFrequency = _getWateringDaysString();
+        final temperatureRange = _getTemperatureRangeString();
         final ownershipDuration = _ownershipDurationController.text.trim();
 
         // Yükleme işlemi başladığında gösterge ekle
@@ -137,6 +177,13 @@ class _AddPlantPageState extends State<AddPlantPage> {
               ownershipDuration: ownershipDuration,
               imageFile: _selectedImage,
               userId: currentUser.uid,
+              wateringDays: _selectedWateringDays,
+              minTemperature: _minTempController.text.isEmpty
+                  ? null
+                  : int.tryParse(_minTempController.text),
+              maxTemperature: _maxTempController.text.isEmpty
+                  ? null
+                  : int.tryParse(_maxTempController.text),
             );
 
         // Yükleme işlemi bittiğinde göstergeyi kaldır
@@ -167,22 +214,11 @@ class _AddPlantPageState extends State<AddPlantPage> {
         if (state.status == PlantStatus.success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Plant added successfully'),
+              content: Text('Plant added successfully!'),
               backgroundColor: Colors.green,
             ),
           );
-
-          // Refresh plant list after adding
-          final userId = FirebaseAuth.instance.currentUser?.uid;
-          if (userId != null) {
-            context.read<PlantCubit>().getPlants(userId);
-          }
-
-          // Güvenli navigasyon için mounted kontrolü ekle
-          if (mounted) {
-            // Önce pop yapıp sonra plants sayfasına git
-            Navigator.of(context).pop();
-          }
+          Navigator.pop(context);
         } else if (state.status == PlantStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -193,12 +229,12 @@ class _AddPlantPageState extends State<AddPlantPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.primary,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: const Text(
-            'Add New Plant',
+            'Add Plant',
             style: TextStyle(color: Colors.white),
           ),
           leading: IconButton(
@@ -207,80 +243,345 @@ class _AddPlantPageState extends State<AddPlantPage> {
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: _selectedImage != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              _selectedImage!,
-                              fit: BoxFit.cover,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Görsel seçme alanı
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      height: 150,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6A8D4F), // Daha koyu yeşil
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: _selectedImage != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                _selectedImage!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate,
+                                  color: Colors.white.withOpacity(0.8),
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Add Plant Image',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : const Icon(
-                            Icons.add_photo_alternate,
-                            color: Colors.white,
-                            size: 48,
-                          ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                _CustomTextField(
-                  controller: _nameController,
-                  label: 'Plant Name',
-                  hintText: 'Enter plant name',
-                ),
-                const SizedBox(height: 16),
-                _CustomTextField(
-                  controller: _descriptionController,
-                  label: 'Description',
-                  hintText: 'Detailed information about the plant',
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                _CustomTextField(
-                  controller: _wateringFrequencyController,
-                  label: 'Watering Frequency',
-                  hintText: 'E.g. Once a week',
-                ),
-                const SizedBox(height: 16),
-                _CustomTextField(
-                  controller: _temperatureRangeController,
-                  label: 'Temperature Range',
-                  hintText: 'E.g. 65-75°F (18-24°C)',
-                ),
-                const SizedBox(height: 16),
-                _CustomTextField(
-                  controller: _ownershipDurationController,
-                  label: 'Ownership Duration',
-                  hintText: 'E.g. 2 months',
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.white,
-                    foregroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
+                  const SizedBox(height: 24),
+
+                  // Bitki adı
+                  const Text(
+                    'Plant Name',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6A8D4F), // Daha koyu yeşil
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    child: TextFormField(
+                      controller: _nameController,
+                      style: const TextStyle(
+                        color: Color(0xFF5A7D3F),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Enter plant name',
+                        hintStyle: TextStyle(
+                            color: Color(0xFF5A7D3F).withOpacity(0.6)),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter plant name';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                  child: Text(_isUploading ? 'Saving...' : 'Save Plant'),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  // Açıklama
+                  const Text(
+                    'Description',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6A8D4F), // Daha koyu yeşil
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 4,
+                      style: const TextStyle(
+                        color: Color(0xFF5A7D3F),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Enter plant description',
+                        hintStyle: TextStyle(
+                            color: Color(0xFF5A7D3F).withOpacity(0.6)),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Sulama günleri
+                  const Text(
+                    'Watering Days',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity, // Tam genişlik
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6A8D4F), // Daha koyu yeşil
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 8, // Yatay boşluk
+                          runSpacing: 8, // Dikey boşluk
+                          children: List.generate(
+                            _weekDays.length,
+                            (index) => GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedWateringDays[index] =
+                                      !_selectedWateringDays[index];
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _selectedWateringDays[index]
+                                      ? Colors.white
+                                      : const Color(
+                                          0xFF5A7D3F), // Seçiliyse beyaz, değilse daha koyu yeşil
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _weekDays[index],
+                                  style: TextStyle(
+                                    color: _selectedWateringDays[index]
+                                        ? AppColors.primary
+                                        : Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Lütfen en az bir sulama günü seçin',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Sıcaklık aralığı
+                  const Text(
+                    'Temperature Range (°C)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6A8D4F), // Daha koyu yeşil
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: TextFormField(
+                            controller: _minTempController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(
+                              color: Color(0xFF5A7D3F),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Min',
+                              hintStyle: TextStyle(
+                                  color: Color(0xFF5A7D3F).withOpacity(0.6)),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty) {
+                                final number = int.tryParse(value);
+                                if (number == null) {
+                                  return 'Geçerli bir sayı girin';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          '-',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6A8D4F), // Daha koyu yeşil
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: TextFormField(
+                            controller: _maxTempController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Color(0xFF5A7D3F)),
+                            decoration: InputDecoration(
+                              hintText: 'Max',
+                              hintStyle: TextStyle(
+                                  color: Color(0xFF5A7D3F).withOpacity(0.6)),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty) {
+                                final number = int.tryParse(value);
+                                if (number == null) {
+                                  return 'Geçerli bir sayı girin';
+                                }
+
+                                // Min sıcaklık kontrolü
+                                if (_minTempController.text.isNotEmpty) {
+                                  final minTemp =
+                                      int.tryParse(_minTempController.text);
+                                  if (minTemp != null && number < minTemp) {
+                                    return 'Max, Min\'den büyük olmalı';
+                                  }
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Sahiplik süresi
+                  const Text(
+                    'Ownership Duration',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6A8D4F), // Daha koyu yeşil
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextFormField(
+                      controller: _ownershipDurationController,
+                      style: const TextStyle(color: Color(0xFF5A7D3F)),
+                      decoration: InputDecoration(
+                        hintText: 'E.g. 2 months',
+                        hintStyle: TextStyle(
+                            color: Color(0xFF5A7D3F).withOpacity(0.6)),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Kaydet butonu
+                  ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize:
+                          const Size(double.infinity, 50), // Tam genişlik
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      _isUploading ? 'Saving...' : 'Save Plant',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -295,6 +596,7 @@ class _CustomTextField extends StatelessWidget {
   final String hintText;
   final int? maxLines;
   final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
   const _CustomTextField({
     required this.controller,
@@ -302,6 +604,7 @@ class _CustomTextField extends StatelessWidget {
     required this.hintText,
     this.maxLines = 1,
     this.keyboardType,
+    this.validator,
   });
 
   @override
@@ -320,20 +623,21 @@ class _CustomTextField extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: const Color(0xFF6A8D4F), // Daha koyu yeşil
             borderRadius: BorderRadius.circular(8),
           ),
-          child: TextField(
+          child: TextFormField(
             controller: controller,
             maxLines: maxLines,
             keyboardType: keyboardType,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
+            validator: validator,
           ),
         ),
       ],
