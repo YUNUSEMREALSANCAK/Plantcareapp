@@ -4,9 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PlantRecognitionRepository {
-  // API anahtarı
-  final String _apiKey =
-      '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';
+  // API anahtarını doğrudan kullan (geçici çözüm)
+  final String _apiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
   final String _baseUrl = 'https://api.openai.com/v1/chat/completions';
 
   Future<String> recognizePlant(File imageFile) async {
@@ -21,7 +20,7 @@ class PlantRecognitionRepository {
 
       // API isteği için JSON hazırla
       final requestBody = jsonEncode({
-        "model": "gpt-4o-mini", // Daha ekonomik model
+        "model": "gpt-4o",
         "messages": [
           {
             "role": "user",
@@ -35,13 +34,13 @@ class PlantRecognitionRepository {
                 "type": "image_url",
                 "image_url": {
                   "url": "data:image/jpeg;base64,$base64Image",
-                  "detail": "low" // Düşük detay seviyesine geçiş yapın
+                  "detail": "high"
                 }
               }
             ]
           }
         ],
-        "max_tokens": 800 // Token sayısını azaltın
+        "max_tokens": 1000
       });
 
       // API isteği gönder
@@ -55,17 +54,18 @@ class PlantRecognitionRepository {
       );
 
       print('API yanıtı alındı: ${response.statusCode}');
-      print('API yanıt içeriği: ${response.body}');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 401) {
+        print('Yetkilendirme hatası: ${response.body}');
+        // Hata durumunda mock yanıt döndür
+        return _getMockResponse();
+      } else if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         return data['choices'][0]['message']['content'];
-      } else if (response.statusCode == 429) {
-        // Rate limit hatası durumunda mock yanıt döndür
-        return _getMockResponse();
       } else {
         print('API Hatası: ${response.statusCode} - ${response.body}');
-        throw Exception('Bitki tanıma hatası: ${response.statusCode}');
+        // Diğer hata durumlarında da mock yanıt döndür
+        return _getMockResponse();
       }
     } catch (e) {
       print('Bitki tanıma hatası: $e');
