@@ -21,8 +21,8 @@ PlantModel _$PlantModelFromJson(Map<String, dynamic> json) => PlantModel(
               ?.map((e) => e as bool)
               .toList() ??
           const [false, false, false, false, false, false, false],
-      minTemperature: json['min_temperature'] as int?,
-      maxTemperature: json['max_temperature'] as int?,
+      minTemperature: (json['min_temperature'] as num?)?.toInt(),
+      maxTemperature: (json['max_temperature'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$PlantModelToJson(PlantModel instance) =>

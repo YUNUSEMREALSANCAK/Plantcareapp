@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/plant_recognition_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class PlantRecognitionResultPage extends StatelessWidget {
   const PlantRecognitionResultPage({super.key});
@@ -70,65 +71,69 @@ class PlantRecognitionResultPage extends StatelessWidget {
             );
           } else if (state.status == PlantRecognitionStatus.success) {
             return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Seçilen görsel
-                    if (state.selectedImage != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.file(
-                          state.selectedImage!,
-                          width: double.infinity,
-                          height: 200,
+              child: Column(
+                children: [
+                  // Bitki görseli
+                  if (state.selectedImage != null)
+                    Container(
+                      width: double.infinity,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        image: DecorationImage(
+                          image: FileImage(state.selectedImage!),
                           fit: BoxFit.cover,
                         ),
                       ),
-                    const SizedBox(height: 24),
+                    ),
 
-                    // Sonuç
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: SelectableText(
-                        state.result!,
-                        style: const TextStyle(
+                  // Tanıma sonucu
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: MarkdownBody(
+                      data: state.result ?? 'Sonuç bulunamadı',
+                      styleSheet: MarkdownStyleSheet(
+                        p: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           height: 1.5,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Bitki ekle butonu
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.primary,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Yeni Bitki Ekle',
-                        style: TextStyle(
+                        h1: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
+                        ),
+                        h2: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        h3: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        strong: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        em: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontStyle: FontStyle.italic,
+                        ),
+                        listBullet: const TextStyle(
+                          color: Colors.white,
                           fontSize: 16,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           } else {

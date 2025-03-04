@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 class PlantRecognitionRepository {
   // API anahtarını doğrudan kullan (geçici çözüm)
@@ -28,7 +29,7 @@ class PlantRecognitionRepository {
               {
                 "type": "text",
                 "text":
-                    "Bu bitkiyi analiz et ve şu bilgileri ver: 1) Bitkinin halk arasındaki ismi, 2) Bitkinin biyolojik ismi, 3) Bitkinin yaşamak için ihtiyaç duyduğu sıcaklık aralığı, 4) Bitkinin sulama aralığı, 5) Bitki hakkında genel bilgiler (nerede yetiştiği, sevdiği toprak çeşitleri, gündüz veya gece bitkisi olması, koku ve faydaları vb.)"
+                    "Bu bitkiyi analiz et ve şu bilgileri Türkçe olarak ver: 1) Bitkinin halk arasındaki ismi, 2) Bitkinin biyolojik ismi, 3) Bitkinin yaşamak için ihtiyaç duyduğu sıcaklık aralığı, 4) Bitkinin sulama aralığı, 5) Bitki hakkında genel bilgiler (nerede yetiştiği, sevdiği toprak çeşitleri, gündüz veya gece bitkisi olması, koku ve faydaları vb.). Lütfen yanıtında Türkçe karakterleri doğru kullan."
               },
               {
                 "type": "image_url",
@@ -47,10 +48,12 @@ class PlantRecognitionRepository {
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $_apiKey',
         },
         body: requestBody,
+        encoding: Encoding.getByName('utf-8'),
       );
 
       print('API yanıtı alındı: ${response.statusCode}');
@@ -60,8 +63,15 @@ class PlantRecognitionRepository {
         // Hata durumunda mock yanıt döndür
         return _getMockResponse();
       } else if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        return data['choices'][0]['message']['content'];
+        // UTF-8 kodlamasını açıkça belirt
+        final String responseBody = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> data = json.decode(responseBody);
+        final String content = data['choices'][0]['message']['content'];
+
+        // Türkçe karakter düzeltmeleri
+        final String fixedContent = _fixTurkishChars(content);
+
+        return fixedContent;
       } else {
         print('API Hatası: ${response.statusCode} - ${response.body}');
         // Diğer hata durumlarında da mock yanıt döndür
@@ -72,6 +82,46 @@ class PlantRecognitionRepository {
       // Hata durumunda mock yanıt döndür
       return _getMockResponse();
     }
+  }
+
+  // Türkçe karakter düzeltmeleri
+  String _fixTurkishChars(String text) {
+    // Bozuk Türkçe karakter düzeltmeleri
+    final Map<String, String> replacements = {
+      'Ä±': 'ı',
+      'Ä°': 'İ',
+      'Ã¶': 'ö',
+      'Ã–': 'Ö',
+      'Ã¼': 'ü',
+      'Ãœ': 'Ü',
+      'Ã§': 'ç',
+      'Ã‡': 'Ç',
+      'ÅŸ': 'ş',
+      'Åž': 'Ş',
+      'ÄŸ': 'ğ',
+      'Äž': 'Ğ',
+      'tÃ¼r': 'tür',
+      'TÃ¼r': 'Tür',
+      'iÃ§in': 'için',
+      'Ä°Ã§in': 'İçin',
+      'gÃ¼n': 'gün',
+      'GÃ¼n': 'Gün',
+      'Ã¼ze': 'üze',
+      'Ãœze': 'Üze',
+      'Ã§ok': 'çok',
+      'Ã‡ok': 'Çok',
+      'ÅŸek': 'şek',
+      'Åžek': 'Şek',
+      'ÄŸÄ±': 'ğı',
+      'ÄžÄ±': 'Ğı',
+    };
+
+    String result = text;
+    replacements.forEach((key, value) {
+      result = result.replaceAll(key, value);
+    });
+
+    return result;
   }
 
   // Mock yanıt

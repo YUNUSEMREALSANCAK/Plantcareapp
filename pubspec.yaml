@@ -69,6 +69,9 @@ dependencies:
   cached_network_image: ^3.3.0
   flutter_displaymode: ^0.6.0  # Yüksek yenileme hızlı ekranlar için
 
+  # Added from the code block
+  flutter_markdown: ^0.6.18
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
