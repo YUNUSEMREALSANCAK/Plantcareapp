@@ -29,7 +29,31 @@ class PlantRecognitionRepository {
               {
                 "type": "text",
                 "text":
-                    "Bu bitkiyi analiz et ve şu bilgileri Türkçe olarak ver: 1) Bitkinin halk arasındaki ismi, 2) Bitkinin biyolojik ismi, 3) Bitkinin yaşamak için ihtiyaç duyduğu sıcaklık aralığı, 4) Bitkinin sulama aralığı, 5) Bitki hakkında genel bilgiler (nerede yetiştiği, sevdiği toprak çeşitleri, gündüz veya gece bitkisi olması, koku ve faydaları vb.). Lütfen yanıtında Türkçe karakterleri doğru kullan."
+                    """Bu bitkiyi analiz et ve aşağıdaki bilgileri Türkçe olarak ver. MUTLAKA yanıtını tam olarak aşağıdaki formatta yapılandır ve her bilgiyi köşeli parantez içinde ver:
+
+**1) Bitkinin halk arasındaki ismi:**
+[Bitkinin halk arasındaki ismi]
+
+**2) Bitkinin biyolojik ismi:**
+[Bitkinin biyolojik ismi]
+
+**3) Bitkinin yaşamak için ihtiyaç duyduğu sıcaklık aralığı:**
+[Sıcaklık aralığı, örneğin: 18-25°C]
+
+**4) Bitkinin sulama aralığı:**
+[Sulama sıklığı, haftalık olarak belirt, örneğin: Haftada 2 kez]
+
+**5) Işık ihtiyacı:**
+[Bitkinin ışık ihtiyacı, örneğin: Parlak dolaylı ışık]
+
+**6) Toprak tercihi:**
+[Bitkinin tercih ettiği toprak türü]
+
+**7) Bitki hakkında genel bilgiler:**
+[Bitkinin yetiştiği yerler, bakım ipuçları, faydaları ve diğer önemli bilgiler]
+
+ÖNEMLİ: Tüm bilgileri köşeli parantez içinde ver. Parantezleri unutma! Her bilgi için sadece köşeli parantez içinde yanıt ver, başka açıklama ekleme.
+"""
               },
               {
                 "type": "image_url",
@@ -134,20 +158,19 @@ Barış Çiçeği (Spathiphyllum)
 Spathiphyllum wallisii
 
 **3) Bitkinin yaşamak için ihtiyaç duyduğu sıcaklık aralığı:**
-18-30°C arası. 15°C'nin altındaki sıcaklıklarda zarar görebilir. İdeal sıcaklık aralığı 20-25°C'dir.
+18-30°C arası. İdeal sıcaklık aralığı 20-25°C'dir.
 
 **4) Bitkinin sulama aralığı:**
-Yazın haftada 1-2 kez, kışın 10-15 günde bir. Toprağın üst kısmı kuruduğunda sulanmalıdır. Aşırı sulamadan kaçınılmalıdır, ancak tamamen kurumaya da bırakılmamalıdır.
+Yazın haftada 2 kez, kışın haftada 1 kez.
 
-**5) Bitki hakkında genel bilgiler:**
-- **Yetiştiği Yerler:** Doğal olarak Kolombiya ve Venezuela'nın tropikal ormanlarında yetişir.
-- **Sevdiği Toprak:** Humus bakımından zengin, iyi drene olan, hafif asidik toprakları tercih eder.
-- **Işık İhtiyacı:** Doğrudan güneş ışığından hoşlanmaz, parlak dolaylı ışık idealdir. Gölgeli ortamlarda da yaşayabilir ancak çiçek açması zorlaşır.
-- **Nem İhtiyacı:** Yüksek nem sever. Yapraklarına düzenli su püskürtmek faydalıdır.
-- **Faydaları:** NASA tarafından yapılan araştırmalara göre havadaki formaldehit, benzen ve karbon monoksit gibi zararlı maddeleri temizleme özelliğine sahiptir.
-- **Çiçeklenme:** Beyaz, zarif çiçekleri vardır ve doğru bakım koşullarında yıl boyunca çiçek açabilir.
-- **Bakım:** Kolay bakım gerektiren bitkilerdendir, bu nedenle ev bitkileri arasında popülerdir.
-- **Zehirlilik:** Kediler, köpekler ve küçük çocuklar için hafif toksiktir, yutulması halinde ağız ve boğazda tahriş yapabilir.
+**5) Işık ihtiyacı:**
+Parlak dolaylı ışık. Doğrudan güneş ışığından korunmalıdır.
+
+**6) Toprak tercihi:**
+Humus bakımından zengin, iyi drene olan, hafif asidik toprak.
+
+**7) Bitki hakkında genel bilgiler:**
+Doğal olarak Kolombiya ve Venezuela'nın tropikal ormanlarında yetişir. Yüksek nem sever ve yapraklarına düzenli su püskürtmek faydalıdır. NASA tarafından yapılan araştırmalara göre havadaki formaldehit, benzen ve karbon monoksit gibi zararlı maddeleri temizleme özelliğine sahiptir. Beyaz, zarif çiçekleri vardır ve doğru bakım koşullarında yıl boyunca çiçek açabilir. Kolay bakım gerektiren bitkilerdendir, bu nedenle ev bitkileri arasında popülerdir. Kediler, köpekler ve küçük çocuklar için hafif toksiktir, yutulması halinde ağız ve boğazda tahriş yapabilir.
 ''';
   }
 }

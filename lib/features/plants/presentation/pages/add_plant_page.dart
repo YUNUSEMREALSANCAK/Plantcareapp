@@ -71,15 +71,12 @@ class _AddPlantPageState extends State<AddPlantPage> {
       setState(() => _isUploading = true);
 
       final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) throw Exception('User session not found');
-
-      print('Uploading image for user: $userId');
-      print('Image path: ${_selectedImage!.path}');
+      if (userId == null) throw Exception('Kullanıcı oturumu bulunamadı');
 
       // Görsel boyutunu kontrol et
       final fileSize = await _selectedImage!.length();
       if (fileSize > 5 * 1024 * 1024) {
-        throw Exception('Image size must be less than 5MB');
+        throw Exception('Görsel boyutu 5MB\'dan küçük olmalıdır');
       }
 
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -103,25 +100,24 @@ class _AddPlantPageState extends State<AddPlantPage> {
 
       if (uploadTask.state == TaskState.success) {
         final downloadUrl = await storageRef.getDownloadURL();
-        print('Image uploaded successfully. URL: $downloadUrl');
         return downloadUrl;
       } else {
-        throw Exception('Image upload failed: ${uploadTask.state}');
+        throw Exception('Görsel yükleme başarısız oldu: ${uploadTask.state}');
       }
     } on FirebaseException catch (e) {
-      print('Firebase Storage Error: ${e.code} - ${e.message}');
       if (e.code == 'unauthorized') {
-        throw Exception('Authorization error: Please login again');
+        throw Exception('Yetkilendirme hatası: Lütfen tekrar giriş yapın');
       } else if (e.code == 'canceled') {
-        throw Exception('Upload canceled');
+        throw Exception('Yükleme iptal edildi');
       } else {
-        throw Exception('Firebase error: ${e.message}');
+        throw Exception('Firebase hatası: ${e.message}');
       }
     } catch (e) {
-      print('Unexpected error during upload: $e');
-      throw Exception('An error occurred while uploading the image: $e');
+      throw Exception('Görsel yüklenirken bir hata oluştu: $e');
     } finally {
-      setState(() => _isUploading = false);
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
     }
   }
 
@@ -163,12 +159,14 @@ class _AddPlantPageState extends State<AddPlantPage> {
           throw Exception('Kullanıcı oturumu bulunamadı');
         }
 
-        // Görsel yükleme
-        final imageUrl = await _uploadImage();
+        // Görsel yükleme işlemi (eğer seçilmişse)
+        String? imageUrl;
+        if (_selectedImage != null) {
+          imageUrl = await _uploadImage();
+        }
 
         // Sıcaklık aralığı oluştur
-        final temperatureRange =
-            '${_minTempController.text}-${_maxTempController.text}°C';
+        final temperatureRange = _getTemperatureRangeString();
 
         // Sulama günlerini string'e çevir
         final wateringFrequency = _getWateringDaysString();
@@ -191,22 +189,22 @@ class _AddPlantPageState extends State<AddPlantPage> {
                   : int.tryParse(_maxTempController.text),
             );
 
-        // Başarılı mesajı göster
+        // Başarılı mesajı göster ve önceki sayfaya dön
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Bitki başarıyla eklendi')),
           );
-        }
-
-        // Önceki sayfaya dön
-        if (mounted) {
-          Navigator.pop(context, true); // true değeri ile dön (başarılı işlem)
+          Navigator.pop(context, true);
         }
       } catch (e) {
         print('Error in _submitForm: $e');
         if (mounted) {
+          setState(() => _isUploading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Hata: ${e.toString()}')),
+            SnackBar(
+              content: Text('Hata: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       } finally {
@@ -221,18 +219,22 @@ class _AddPlantPageState extends State<AddPlantPage> {
   Widget build(BuildContext context) {
     return BlocListener<PlantCubit, PlantState>(
       listener: (context, state) {
-        if (state.status == PlantStatus.success) {
+        if (state.status == PlantStatus.loading) {
+          setState(() => _isUploading = true);
+        } else if (state.status == PlantStatus.success) {
+          setState(() => _isUploading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Plant added successfully!'),
+              content: Text('Bitki başarıyla eklendi!'),
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context);
+          Navigator.of(context).pop();
         } else if (state.status == PlantStatus.error) {
+          setState(() => _isUploading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? 'An error occurred'),
+              content: Text(state.errorMessage ?? 'Bir hata oluştu'),
               backgroundColor: Colors.red,
             ),
           );
@@ -571,7 +573,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
 
                   // Kaydet butonu
                   ElevatedButton(
-                    onPressed: _submitForm,
+                    onPressed: _isUploading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppColors.primary,
@@ -581,14 +583,38 @@ class _AddPlantPageState extends State<AddPlantPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
+                      disabledBackgroundColor: Colors.grey,
+                      disabledForegroundColor: Colors.white,
                     ),
-                    child: Text(
-                      _isUploading ? 'Saving...' : 'Save Plant',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isUploading
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Kaydediliyor...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const Text(
+                            'Kaydet',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ],
               ),

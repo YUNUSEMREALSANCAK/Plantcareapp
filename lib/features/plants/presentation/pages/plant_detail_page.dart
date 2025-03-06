@@ -5,6 +5,7 @@ import '../../domain/models/plant_model.dart';
 import '../cubit/plant_cubit.dart';
 import '../cubit/plant_state.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class PlantDetailPage extends StatelessWidget {
   final PlantModel plant;
@@ -22,7 +23,7 @@ class PlantDetailPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'Plant Details',
+          'Bitki Detayları',
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -45,7 +46,7 @@ class PlantDetailPage extends StatelessWidget {
             // Show error message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage ?? 'An error occurred'),
+                content: Text(state.errorMessage ?? 'Bir hata oluştu'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -66,6 +67,7 @@ class PlantDetailPage extends StatelessWidget {
                           'https://images.unsplash.com/photo-1615213612138-4d1195b1c0e9',
                     ),
                     fit: BoxFit.cover,
+                    onError: (_, __) => const Icon(Icons.error),
                   ),
                 ),
                 child: Container(
@@ -117,98 +119,267 @@ class PlantDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Description',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      plant.description,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Plant Stats
-                    const Text(
-                      'Plant Stats',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Humidity Indicator
-                    _StatIndicator(
-                      label: 'Watering Frequency',
-                      value: 70, // Placeholder value
-                      icon: Icons.water_drop,
-                      valueLabel: plant.wateringFrequency,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Growth Time
-                    _StatIndicator(
-                      label: 'Temperature Range',
-                      value: 60, // Placeholder value
-                      icon: Icons.thermostat,
-                      valueLabel: plant.temperatureRange,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Yeni eklenen
-                    _StatIndicator(
-                      label: 'Ownership Duration',
-                      value: 50, // Placeholder value
-                      icon: Icons.calendar_today,
-                      valueLabel: plant.ownershipDuration,
-                    ),
+                    // Bitki bilgilerini göster
+                    _buildPlantInfoSection(plant.description),
 
                     const SizedBox(height: 24),
 
-                    // Care Tips
-                    const Text(
-                      'Care Tips',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    // Sulama Günleri
+                    if (plant.wateringDays.contains(true)) ...[
+                      const Text(
+                        'Sulama Günleri',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _CareTip(
-                      icon: Icons.water_drop,
-                      title: 'Watering',
-                      description:
-                          'Water regularly, keeping the soil moist but not soggy.',
-                    ),
-                    const SizedBox(height: 12),
-                    _CareTip(
-                      icon: Icons.wb_sunny,
-                      title: 'Light',
-                      description:
-                          'Place in bright, indirect sunlight for optimal growth.',
-                    ),
-                    const SizedBox(height: 12),
-                    _CareTip(
-                      icon: Icons.thermostat,
-                      title: 'Temperature',
-                      description:
-                          'Keep in temperatures between 65-75°F (18-24°C).',
-                    ),
+                      const SizedBox(height: 16),
+                      _buildWateringDaysIndicator(plant.wateringDays),
+                    ],
                   ],
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlantInfoSection(String description) {
+    // Markdown formatındaki metni işle
+    final Map<String, String> plantInfo =
+        _extractPlantInfoFromMarkdown(description);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Bitki Bilgileri',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (plantInfo['bilimselIsim'] != null &&
+                  plantInfo['bilimselIsim']!.isNotEmpty)
+                _buildInfoRow('Bilimsel İsim:', plantInfo['bilimselIsim']!,
+                    Icons.science),
+              if (plantInfo['sicaklikAraligi'] != null &&
+                  plantInfo['sicaklikAraligi']!.isNotEmpty)
+                _buildInfoRow('Sıcaklık Aralığı:',
+                    plantInfo['sicaklikAraligi']!, Icons.thermostat),
+              if (plantInfo['sulamaSikligi'] != null &&
+                  plantInfo['sulamaSikligi']!.isNotEmpty)
+                _buildInfoRow('Sulama Sıklığı:', plantInfo['sulamaSikligi']!,
+                    Icons.water_drop),
+              if (plantInfo['isikIhtiyaci'] != null &&
+                  plantInfo['isikIhtiyaci']!.isNotEmpty)
+                _buildInfoRow('Işık İhtiyacı:', plantInfo['isikIhtiyaci']!,
+                    Icons.wb_sunny),
+              if (plantInfo['toprakTercihi'] != null &&
+                  plantInfo['toprakTercihi']!.isNotEmpty)
+                _buildInfoRow('Toprak Tercihi:', plantInfo['toprakTercihi']!,
+                    Icons.landscape),
+            ],
+          ),
+        ),
+        if (plantInfo['genelBilgiler'] != null &&
+            plantInfo['genelBilgiler']!.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          const Text(
+            'Genel Bilgiler',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              plantInfo['genelBilgiler']!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, String> _extractPlantInfoFromMarkdown(String markdown) {
+    final Map<String, String> info = {};
+
+    // Markdown işaretlerini temizle
+    String cleanMarkdown = _cleanMarkdownText(markdown);
+
+    // Bilimsel isim - hem markdown hem düz metin için
+    final scientificNameRegex = RegExp(
+        r'Bilimsel İsim:?\s*(.+?)(?=\n\n|\n[A-ZÇĞİÖŞÜ]|\Z)',
+        dotAll: true);
+    final scientificNameMatch = scientificNameRegex.firstMatch(cleanMarkdown);
+    if (scientificNameMatch != null) {
+      info['bilimselIsim'] = scientificNameMatch.group(1)?.trim() ?? '';
+    }
+
+    // Sıcaklık aralığı - hem markdown hem düz metin için
+    final tempRangeRegex = RegExp(
+        r'Sıcaklık Aralığı:?\s*(.+?)(?=\n\n|\n[A-ZÇĞİÖŞÜ]|\Z)',
+        dotAll: true);
+    final tempRangeMatch = tempRangeRegex.firstMatch(cleanMarkdown);
+    if (tempRangeMatch != null) {
+      info['sicaklikAraligi'] = tempRangeMatch.group(1)?.trim() ?? '';
+    }
+
+    // Sulama sıklığı - hem markdown hem düz metin için
+    final wateringRegex = RegExp(
+        r'Sulama Sıklığı:?\s*(.+?)(?=\n\n|\n[A-ZÇĞİÖŞÜ]|\Z)',
+        dotAll: true);
+    final wateringMatch = wateringRegex.firstMatch(cleanMarkdown);
+    if (wateringMatch != null) {
+      info['sulamaSikligi'] = wateringMatch.group(1)?.trim() ?? '';
+    }
+
+    // Işık ihtiyacı - hem markdown hem düz metin için
+    final lightRegex = RegExp(
+        r'Işık İhtiyacı:?\s*(.+?)(?=\n\n|\n[A-ZÇĞİÖŞÜ]|\Z)',
+        dotAll: true);
+    final lightMatch = lightRegex.firstMatch(cleanMarkdown);
+    if (lightMatch != null) {
+      info['isikIhtiyaci'] = lightMatch.group(1)?.trim() ?? '';
+    }
+
+    // Toprak tercihi - hem markdown hem düz metin için
+    final soilRegex = RegExp(
+        r'Toprak Tercihi:?\s*(.+?)(?=\n\n|\n[A-ZÇĞİÖŞÜ]|\Z)',
+        dotAll: true);
+    final soilMatch = soilRegex.firstMatch(cleanMarkdown);
+    if (soilMatch != null) {
+      info['toprakTercihi'] = soilMatch.group(1)?.trim() ?? '';
+    }
+
+    // Genel bilgiler - hem markdown hem düz metin için
+    final generalInfoRegex =
+        RegExp(r'Genel Bilgiler:?\s*(.+?)(?=\Z)', dotAll: true);
+    final generalInfoMatch = generalInfoRegex.firstMatch(cleanMarkdown);
+    if (generalInfoMatch != null) {
+      info['genelBilgiler'] = generalInfoMatch.group(1)?.trim() ?? '';
+    }
+
+    return info;
+  }
+
+  // Markdown işaretlerini temizle
+  String _cleanMarkdownText(String text) {
+    return text
+        .replaceAll('**', '')
+        .replaceAll('*', '')
+        .replaceAll('#', '')
+        .replaceAll('_', '')
+        .replaceAll('`', '')
+        .trim();
+  }
+
+  Widget _buildWateringDaysIndicator(List<bool> wateringDays) {
+    final List<String> days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(
+          7,
+          (index) => _DayIndicator(
+            day: days[index],
+            isSelected:
+                index < wateringDays.length ? wateringDays[index] : false,
           ),
         ),
       ),
@@ -312,125 +483,45 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-class _StatIndicator extends StatelessWidget {
-  final String label;
-  final int value;
-  final IconData icon;
-  final String? valueLabel;
+class _DayIndicator extends StatelessWidget {
+  final String day;
+  final bool isSelected;
 
-  const _StatIndicator({
-    required this.label,
-    required this.value,
-    required this.icon,
-    this.valueLabel,
+  const _DayIndicator({
+    required this.day,
+    required this.isSelected,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              valueLabel ?? '$value%',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Stack(
-          children: [
-            Container(
-              height: 8,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            Container(
-              height: 8,
-              width: MediaQuery.of(context).size.width * (value / 100) * 0.85,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _CareTip extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-
-  const _CareTip({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.water_drop,
+              color: isSelected
+                  ? AppColors.primary
+                  : Colors.white.withOpacity(0.5),
+              size: 20,
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          day,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
     );
   }
 }
