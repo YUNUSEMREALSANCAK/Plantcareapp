@@ -1,0 +1,152 @@
+{
+  "appTitle": "MyPlant",
+  "home": "Ana Sayfa",
+  "plants": "Bitkilerim",
+  "myPlants": "Bitkilerim",
+  "profile": "Profil",
+  "login": "Giriş Yap",
+  "register": "Kayıt Ol",
+  "email": "E-posta",
+  "password": "Şifre",
+  "forgotPassword": "Şifremi Unuttum?",
+  "dontHaveAccount": "Hesabınız yok mu?",
+  "alreadyHaveAccount": "Zaten hesabınız var mı?",
+  "signUp": "Kayıt Ol",
+  "signIn": "Giriş Yap",
+  "logout": "Çıkış Yap",
+  "addPlant": "Bitki Ekle",
+  "addNewPlant": "Yeni Bitki Ekle",
+  "viewAllPlants": "Tüm Bitkileri Görüntüle",
+  "plantName": "Bitki Adı",
+  "description": "Açıklama",
+  "wateringDays": "Sulama Günleri",
+  "temperatureRange": "Sıcaklık Aralığı (°C)",
+  "ownershipDuration": "Sahiplik Süresi",
+  "save": "Kaydet",
+  "saving": "Kaydediliyor...",
+  "plantAdded": "Bitki başarıyla eklendi!",
+  "plantDeleted": "Bitki başarıyla silindi!",
+  "error": "Bir hata oluştu",
+  "errorWithMessage": "Hata: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "totalPlants": "Toplam Bitki",
+  "plantsCount": "{count} Bitki",
+  "@plantsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "appLanguage": "Uygulama Dili",
+  "turkish": "Türkçe",
+  "english": "İngilizce",
+  "recognizePlant": "Bitkimi Tanı",
+  "takePicture": "Fotoğraf Çek",
+  "selectFromGallery": "Galeriden Seç",
+  "analyzing": "Bitki analiz ediliyor...",
+  "plantInfo": "Bitki Bilgileri",
+  "scientificName": "Bilimsel İsim",
+  "lightRequirement": "Işık İhtiyacı",
+  "soilPreference": "Toprak Tercihi",
+  "generalInfo": "Genel Bilgiler",
+  "savePlant": "Bitkiyi Kaydet",
+  "photoSource": "Fotoğraf Kaynağı",
+  "camera": "Kamera",
+  "gallery": "Galeri",
+  "addPhoto": "Fotoğraf Ekle",
+  "min": "Min",
+  "max": "Maks",
+  "selectWateringDays": "Lütfen en az bir sulama günü seçin",
+  "monday": "Pazartesi",
+  "tuesday": "Salı",
+  "wednesday": "Çarşamba",
+  "thursday": "Perşembe",
+  "friday": "Cuma",
+  "saturday": "Cumartesi",
+  "sunday": "Pazar",
+  "welcome": "Hoş geldin {name}!",
+  "@welcome": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "location": "İstanbul, Türkiye",
+  "yourPlants": "Bitkileriniz",
+  "rainfall": "Yağış",
+  "temperature": "Sıcaklık",
+  "humidity": "Nem",
+  "notifications": "Bildirimler",
+  "noNotifications": "Henüz bildirim bulunmuyor. Bitki ekleyerek sulama ve sıcaklık bildirimlerini görüntüleyebilirsiniz.",
+  "noNotificationsToday": "Bugün için bildirim bulunmuyor. Tüm bitkileriniz iyi durumda!",
+  "wateringTime": "{plantName} Sulama Zamanı",
+  "@wateringTime": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "wateringMessage": "Bugün {plantName} bitkisini sulamanız gerekiyor.",
+  "@wateringMessage": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "lowTemperature": "{plantName} için Düşük Sıcaklık",
+  "@lowTemperature": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "lowTemperatureMessage": "Mevcut sıcaklık ({temp}°C), {plantName} için çok düşük. Minimum {minTemp}°C olmalı.",
+  "@lowTemperatureMessage": {
+    "placeholders": {
+      "temp": {},
+      "plantName": {},
+      "minTemp": {}
+    }
+  },
+  "highTemperature": "{plantName} için Yüksek Sıcaklık",
+  "@highTemperature": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "highTemperatureMessage": "Mevcut sıcaklık ({temp}°C), {plantName} için çok yüksek. Maksimum {maxTemp}°C olmalı.",
+  "@highTemperatureMessage": {
+    "placeholders": {
+      "temp": {},
+      "plantName": {},
+      "maxTemp": {}
+    }
+  },
+  "noPlantsYet": "Henüz bitki eklenmemiş",
+  "user": "Kullanıcı",
+  "notSpecified": "Belirtilmedi",
+  "maxTemperature": "En fazla {temp}°C",
+  "@maxTemperature": {
+    "placeholders": {
+      "temp": {}
+    }
+  },
+  "minTemperature": "En az {temp}°C",
+  "@minTemperature": {
+    "placeholders": {
+      "temp": {}
+    }
+  },
+  "temperatureRangeValue": "{min}°C - {max}°C",
+  "@temperatureRangeValue": {
+    "placeholders": {
+      "min": {},
+      "max": {}
+    }
+  },
+  "languageChanged": "Dil {language} olarak ayarlandı",
+  "@languageChanged": {
+    "placeholders": {
+      "language": {}
+    }
+  }
+} 

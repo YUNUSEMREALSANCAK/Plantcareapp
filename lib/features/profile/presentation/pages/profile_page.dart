@@ -9,13 +9,21 @@ import '../../../home/presentation/pages/home_page.dart';
 import '../../../plants/presentation/pages/plants_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/utils/route_transitions.dart';
+import '../../../../core/language/language_cubit.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -23,9 +31,9 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Profil',
-          style: TextStyle(
+        title: Text(
+          l10n.profile,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -60,7 +68,7 @@ class ProfilePage extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Kullanıcı Adı
                   Text(
-                    user?.displayName ?? 'Kullanıcı',
+                    user?.displayName ?? l10n.user,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -108,15 +116,15 @@ class ProfilePage extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Toplam Bitki',
-                            style: TextStyle(
+                          Text(
+                            l10n.totalPlants,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
                             ),
                           ),
                           Text(
-                            '$plantCount Bitki',
+                            l10n.plantsCount(plantCount.toString()),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -130,6 +138,33 @@ class ProfilePage extends StatelessWidget {
                 },
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            // Dil Değiştirme Butonu
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.appLanguage,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildLanguageSwitch(context),
+                ],
+              ),
+            ),
+
             const Spacer(),
             // Çıkış Yap Butonu
             SizedBox(
@@ -153,9 +188,9 @@ class ProfilePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Çıkış Yap',
-                  style: TextStyle(
+                child: Text(
+                  l10n.logout,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -191,18 +226,140 @@ class ProfilePage extends StatelessWidget {
             );
           }
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+            icon: const Icon(Icons.home),
+            label: l10n.home,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_florist),
-            label: 'Plants',
+            icon: const Icon(Icons.local_florist),
+            label: l10n.plants,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            label: l10n.profile,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Dil değiştirme butonu
+  Widget _buildLanguageSwitch(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final languageCubit = context.watch<LanguageCubit>();
+    final currentLocale = languageCubit.state.languageCode;
+    final _isTurkish = currentLocale == 'tr';
+
+    return Container(
+      height: 50,
+      width: MediaQuery.of(context).size.width - 80, // Padding hesaba katılarak
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+      ),
+      child: Stack(
+        children: [
+          // Kaydırılabilir seçici
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            left: _isTurkish ? 0 : (MediaQuery.of(context).size.width - 80) / 2,
+            child: Container(
+              width: (MediaQuery.of(context).size.width - 80) / 2,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Dil seçenekleri
+          Row(
+            children: [
+              // Türkçe seçeneği
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    languageCubit.changeLanguage('tr');
+                    // Dil değiştirme işlevi
+                    print(l10n.languageChanged(l10n.turkish));
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          '🇹🇷',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.turkish,
+                          style: TextStyle(
+                            color: _isTurkish ? Colors.white : Colors.white70,
+                            fontWeight: _isTurkish
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // İngilizce seçeneği
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    languageCubit.changeLanguage('en');
+                    // Dil değiştirme işlevi
+                    print(l10n.languageChanged(l10n.english));
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          '🇬🇧',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.english,
+                          style: TextStyle(
+                            color: !_isTurkish ? Colors.white : Colors.white70,
+                            fontWeight: !_isTurkish
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

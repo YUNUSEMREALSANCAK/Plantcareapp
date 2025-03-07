@@ -1,0 +1,152 @@
+{
+  "appTitle": "MyPlant",
+  "home": "Home",
+  "plants": "Plants",
+  "myPlants": "My Plants",
+  "profile": "Profile",
+  "login": "Login",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot Password?",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "signUp": "Sign Up",
+  "signIn": "Sign In",
+  "logout": "Logout",
+  "addPlant": "Add Plant",
+  "addNewPlant": "Add New Plant",
+  "viewAllPlants": "View All Plants",
+  "plantName": "Plant Name",
+  "description": "Description",
+  "wateringDays": "Watering Days",
+  "temperatureRange": "Temperature Range (°C)",
+  "ownershipDuration": "Ownership Duration",
+  "save": "Save",
+  "saving": "Saving...",
+  "plantAdded": "Plant added successfully!",
+  "plantDeleted": "Plant deleted successfully!",
+  "error": "An error occurred",
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "totalPlants": "Total Plants",
+  "plantsCount": "{count} Plants",
+  "@plantsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "appLanguage": "App Language",
+  "turkish": "Turkish",
+  "english": "English",
+  "recognizePlant": "Recognize Plant",
+  "takePicture": "Take Picture",
+  "selectFromGallery": "Select from Gallery",
+  "analyzing": "Analyzing plant...",
+  "plantInfo": "Plant Information",
+  "scientificName": "Scientific Name",
+  "lightRequirement": "Light Requirement",
+  "soilPreference": "Soil Preference",
+  "generalInfo": "General Information",
+  "savePlant": "Save Plant",
+  "photoSource": "Photo Source",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  "addPhoto": "Add Photo",
+  "min": "Min",
+  "max": "Max",
+  "selectWateringDays": "Please select at least one watering day",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  "welcome": "Welcome {name}!",
+  "@welcome": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "location": "Istanbul, Turkey",
+  "yourPlants": "Your Plants",
+  "rainfall": "Rainfall",
+  "temperature": "Temperature",
+  "humidity": "Humidity",
+  "notifications": "Notifications",
+  "noNotifications": "No notifications yet. Add plants to see watering and temperature notifications.",
+  "noNotificationsToday": "No notifications for today. All your plants are doing well!",
+  "wateringTime": "{plantName} Watering Time",
+  "@wateringTime": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "wateringMessage": "You need to water your {plantName} plant today.",
+  "@wateringMessage": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "lowTemperature": "Low Temperature for {plantName}",
+  "@lowTemperature": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "lowTemperatureMessage": "Current temperature ({temp}°C) is too low for {plantName}. It should be at least {minTemp}°C.",
+  "@lowTemperatureMessage": {
+    "placeholders": {
+      "temp": {},
+      "plantName": {},
+      "minTemp": {}
+    }
+  },
+  "highTemperature": "High Temperature for {plantName}",
+  "@highTemperature": {
+    "placeholders": {
+      "plantName": {}
+    }
+  },
+  "highTemperatureMessage": "Current temperature ({temp}°C) is too high for {plantName}. It should be at most {maxTemp}°C.",
+  "@highTemperatureMessage": {
+    "placeholders": {
+      "temp": {},
+      "plantName": {},
+      "maxTemp": {}
+    }
+  },
+  "noPlantsYet": "No plants added yet",
+  "user": "User",
+  "notSpecified": "Not specified",
+  "maxTemperature": "Max {temp}°C",
+  "@maxTemperature": {
+    "placeholders": {
+      "temp": {}
+    }
+  },
+  "minTemperature": "Min {temp}°C",
+  "@minTemperature": {
+    "placeholders": {
+      "temp": {}
+    }
+  },
+  "temperatureRangeValue": "{min}°C - {max}°C",
+  "@temperatureRangeValue": {
+    "placeholders": {
+      "min": {},
+      "max": {}
+    }
+  },
+  "languageChanged": "Language set to {language}",
+  "@languageChanged": {
+    "placeholders": {
+      "language": {}
+    }
+  }
+} 

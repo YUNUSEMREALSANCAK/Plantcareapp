@@ -13,7 +13,7 @@ import '../../../plant_recognition/presentation/pages/plant_recognition_result_p
 import '../../../plants/presentation/cubit/plant_cubit.dart';
 import '../../../plants/presentation/cubit/plant_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,7 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final String _city = 'Istanbul';
   final String _userName =
-      FirebaseAuth.instance.currentUser?.displayName ?? 'Kullanıcı';
+      FirebaseAuth.instance.currentUser?.displayName ?? 'User';
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
 
   void _loadData() {
     // Hava durumu verilerini yükle
-    context.read<WeatherCubit>().getWeather(city: _city, lang: 'tr');
+    context.read<WeatherCubit>().getWeather(city: _city, lang: 'en');
 
     // Bitkileri yükle
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -46,6 +46,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -54,9 +56,9 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text(
-            'Home',
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            l10n.home,
+            style: const TextStyle(color: Colors.white),
           ),
         ),
         body: SafeArea(
@@ -67,23 +69,23 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome $_userName!',
+                    l10n.welcome(_userName),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  const Row(
+                  Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         color: Colors.white70,
                         size: 16,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'Istanbul, Turkey',
-                        style: TextStyle(
+                        l10n.location,
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
                         ),
@@ -104,19 +106,19 @@ class _HomePageState extends State<HomePage> {
                             _WeatherCard(
                               icon: Icons.water_drop,
                               value: 'N/A',
-                              label: 'Rainfall',
+                              label: l10n.rainfall,
                             ),
                             const SizedBox(width: 12),
                             _WeatherCard(
                               icon: Icons.thermostat,
                               value: 'N/A',
-                              label: 'Temperature',
+                              label: l10n.temperature,
                             ),
                             const SizedBox(width: 12),
                             _WeatherCard(
                               icon: Icons.opacity,
                               value: 'N/A',
-                              label: 'Humidity',
+                              label: l10n.humidity,
                             ),
                           ],
                         );
@@ -131,13 +133,13 @@ class _HomePageState extends State<HomePage> {
                             _WeatherCard(
                               icon: Icons.thermostat,
                               value: '${weather.degree}°',
-                              label: 'Temperature',
+                              label: l10n.temperature,
                             ),
                             const SizedBox(width: 12),
                             _WeatherCard(
                               icon: Icons.opacity,
                               value: '${weather.humidity}%',
-                              label: 'Humidity',
+                              label: l10n.humidity,
                             ),
                           ],
                         );
@@ -147,19 +149,19 @@ class _HomePageState extends State<HomePage> {
                             _WeatherCard(
                               icon: Icons.water_drop,
                               value: 'N/A',
-                              label: 'Rainfall',
+                              label: l10n.rainfall,
                             ),
                             const SizedBox(width: 12),
                             _WeatherCard(
                               icon: Icons.thermostat,
                               value: 'N/A',
-                              label: 'Temperature',
+                              label: l10n.temperature,
                             ),
                             const SizedBox(width: 12),
                             _WeatherCard(
                               icon: Icons.opacity,
                               value: 'N/A',
-                              label: 'Humidity',
+                              label: l10n.humidity,
                             ),
                           ],
                         );
@@ -168,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 32),
                   Text(
-                    'Your Plants',
+                    l10n.yourPlants,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -196,9 +198,9 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Add New Plant',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          child: Text(
+                            l10n.addNewPlant,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -221,9 +223,9 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'View All Plants',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          child: Text(
+                            l10n.viewAllPlants,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -271,14 +273,14 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt_outlined),
-                        SizedBox(width: 8),
+                        const Icon(Icons.camera_alt_outlined),
+                        const SizedBox(width: 8),
                         Text(
-                          'Bitkini Tanı',
-                          style: TextStyle(
+                          l10n.recognizePlant,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -288,9 +290,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 32),
                   // Bildirimler bölümü
-                  const Text(
-                    'Bildirimler',
-                    style: TextStyle(
+                  Text(
+                    l10n.notifications,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -314,9 +316,9 @@ class _HomePageState extends State<HomePage> {
                             color: Colors.white.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Henüz bildirim bulunmuyor. Bitki ekleyerek sulama ve sıcaklık bildirimlerini görüntüleyebilirsiniz.',
-                            style: TextStyle(color: Colors.white),
+                          child: Text(
+                            l10n.noNotifications,
+                            style: const TextStyle(color: Colors.white),
                           ),
                         );
                       }
@@ -331,9 +333,8 @@ class _HomePageState extends State<HomePage> {
                               plant.wateringDays[today])
                           .map((plant) => _NotificationItem(
                                 icon: Icons.water_drop,
-                                title: '${plant.name} Sulama Zamanı',
-                                message:
-                                    'Bugün ${plant.name} bitkisini sulamanız gerekiyor.',
+                                title: l10n.wateringTime(plant.name),
+                                message: l10n.wateringMessage(plant.name),
                                 color: Colors.blue.shade700,
                               ))
                           .toList();
@@ -356,18 +357,24 @@ class _HomePageState extends State<HomePage> {
                             if (currentTemp < plant.minTemperature!) {
                               temperatureNotifications.add(_NotificationItem(
                                 icon: Icons.thermostat,
-                                title: '${plant.name} için Düşük Sıcaklık',
-                                message:
-                                    'Mevcut sıcaklık (${currentTemp.toStringAsFixed(1)}°C), ${plant.name} için çok düşük. Minimum ${plant.minTemperature}°C olmalı.',
+                                title: l10n.lowTemperature(plant.name),
+                                message: l10n.lowTemperatureMessage(
+                                  currentTemp.toStringAsFixed(1),
+                                  plant.name,
+                                  plant.minTemperature.toString(),
+                                ),
                                 color: Colors.blue.shade900,
                               ));
                             } else if (currentTemp > plant.maxTemperature!) {
                               temperatureNotifications.add(_NotificationItem(
                                 icon: Icons.thermostat,
-                                title: '${plant.name} için Yüksek Sıcaklık',
-                                message:
-                                    'Mevcut sıcaklık (${currentTemp.toStringAsFixed(1)}°C), ${plant.name} için çok yüksek. Maksimum ${plant.maxTemperature}°C olmalı.',
-                                color: Colors.green.shade700,
+                                title: l10n.highTemperature(plant.name),
+                                message: l10n.highTemperatureMessage(
+                                  currentTemp.toStringAsFixed(1),
+                                  plant.name,
+                                  plant.maxTemperature.toString(),
+                                ),
+                                color: Colors.red.shade700,
                               ));
                             }
                           }
@@ -387,9 +394,9 @@ class _HomePageState extends State<HomePage> {
                             color: Colors.white.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Bugün için bildirim bulunmuyor. Tüm bitkileriniz iyi durumda!',
-                            style: TextStyle(color: Colors.white),
+                          child: Text(
+                            l10n.noNotificationsToday,
+                            style: const TextStyle(color: Colors.white),
                           ),
                         );
                       }
@@ -430,18 +437,18 @@ class _HomePageState extends State<HomePage> {
               );
             }
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+              icon: const Icon(Icons.home),
+              label: l10n.home,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.local_florist),
-              label: 'Plants',
+              icon: const Icon(Icons.local_florist),
+              label: l10n.plants,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Profile',
+              icon: const Icon(Icons.person_outline),
+              label: l10n.profile,
             ),
           ],
         ),

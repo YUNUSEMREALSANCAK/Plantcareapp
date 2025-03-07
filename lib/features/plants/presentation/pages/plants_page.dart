@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../core/utils/route_transitions.dart';
 import '../../../auth/presentation/pages/login_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PlantsPage extends StatefulWidget {
   const PlantsPage({super.key});
@@ -62,6 +63,8 @@ class _PlantsPageState extends State<PlantsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -70,9 +73,9 @@ class _PlantsPageState extends State<PlantsPage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text(
-            'My Plants',
-            style: TextStyle(
+          title: Text(
+            l10n.myPlants,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -93,7 +96,7 @@ class _PlantsPageState extends State<PlantsPage> {
             if (state.status == PlantStatus.error) {
               return Center(
                 child: Text(
-                  state.errorMessage ?? 'Bir hata oluştu',
+                  state.errorMessage ?? l10n.error,
                   style: const TextStyle(color: Colors.white),
                 ),
               );
@@ -103,7 +106,7 @@ class _PlantsPageState extends State<PlantsPage> {
             if (plants == null || plants.isEmpty) {
               return Center(
                 child: Text(
-                  'No plants added yet',
+                  l10n.noPlantsYet,
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
@@ -167,18 +170,18 @@ class _PlantsPageState extends State<PlantsPage> {
               );
             }
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Beranda',
+              icon: const Icon(Icons.home),
+              label: l10n.home,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.local_florist),
-              label: 'Plants',
+              icon: const Icon(Icons.local_florist),
+              label: l10n.plants,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Profil',
+              icon: const Icon(Icons.person_outline),
+              label: l10n.profile,
             ),
           ],
         ),
