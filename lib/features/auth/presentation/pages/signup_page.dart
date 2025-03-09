@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -17,20 +18,99 @@ class _SignupPageState extends State<SignupPage> {
   final _passwordController = TextEditingController();
   final _fullNameController = TextEditingController();
   String? _errorText;
+  bool _isLoading = false;
+  bool _isFormValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_validateForm);
+    _passwordController.addListener(_validateForm);
+    _fullNameController.addListener(_validateForm);
+  }
 
   @override
   void dispose() {
+    _emailController.removeListener(_validateForm);
+    _passwordController.removeListener(_validateForm);
+    _fullNameController.removeListener(_validateForm);
     _emailController.dispose();
     _passwordController.dispose();
     _fullNameController.dispose();
     super.dispose();
   }
 
+  void _validateForm() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final fullName = _fullNameController.text.trim();
+
+    setState(() {
+      _isFormValid = email.isNotEmpty &&
+          _isValidEmail(email) &&
+          password.isNotEmpty &&
+          password.length >= 6 &&
+          fullName.isNotEmpty;
+    });
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegExp.hasMatch(email);
+  }
+
+  void _handleSignUp() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final fullName = _fullNameController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() => _errorText = 'Email alanı boş bırakılamaz');
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      setState(() => _errorText = 'Geçerli bir email adresi giriniz');
+      return;
+    }
+
+    if (fullName.isEmpty) {
+      setState(() => _errorText = 'Ad Soyad alanı boş bırakılamaz');
+      return;
+    }
+
+    if (password.isEmpty) {
+      setState(() => _errorText = 'Şifre alanı boş bırakılamaz');
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() => _errorText = 'Şifre en az 6 karakter olmalıdır');
+      return;
+    }
+
+    // Hata mesajını temizle
+    setState(() {
+      _errorText = null;
+      _isLoading = true;
+    });
+
+    // Kayıt işlemini başlat
+    context.read<AuthCubit>().signUp(
+          email: email,
+          password: password,
+          fullName: fullName,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
+          setState(() => _isLoading = false);
           // Başarılı kayıt bildirimi
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -49,7 +129,10 @@ class _SignupPageState extends State<SignupPage> {
             Navigator.of(context).pushReplacementNamed('/home');
           });
         } else if (state.status == AuthStatus.error) {
-          setState(() => _errorText = state.errorMessage);
+          setState(() {
+            _isLoading = false;
+            _errorText = state.errorMessage;
+          });
           // Hata bildirimi
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -62,6 +145,8 @@ class _SignupPageState extends State<SignupPage> {
               margin: const EdgeInsets.all(16),
             ),
           );
+        } else if (state.status == AuthStatus.loading) {
+          setState(() => _isLoading = true);
         }
       },
       child: Scaffold(
@@ -92,7 +177,7 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          AppText.createAccount,
+                          l10n.register,
                           style: const TextStyle(
                             color: AppColors.white,
                             fontSize: 20,
@@ -104,7 +189,7 @@ class _SignupPageState extends State<SignupPage> {
                         // Email TextField
                         _CustomTextField(
                           controller: _emailController,
-                          hintText: AppText.email,
+                          hintText: l10n.email,
                           prefixIcon: const Text('@'),
                         ),
                         const SizedBox(height: 16),
@@ -118,7 +203,7 @@ class _SignupPageState extends State<SignupPage> {
                         // Password TextField
                         _CustomTextField(
                           controller: _passwordController,
-                          hintText: AppText.password,
+                          hintText: l10n.password,
                           prefixIcon: const Icon(Icons.lock_outline),
                           isPassword: true,
                           errorText: _errorText,
@@ -126,22 +211,21 @@ class _SignupPageState extends State<SignupPage> {
                         const SizedBox(height: 24),
                         // Signup Button
                         ElevatedButton(
-                          onPressed: () {
-                            context.read<AuthCubit>().signUp(
-                                  email: _emailController.text,
-                                  password: _passwordController.text,
-                                  fullName: _fullNameController.text,
-                                );
-                          },
+                          onPressed: _isLoading || !_isFormValid
+                              ? null
+                              : _handleSignUp,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.white,
                             foregroundColor: AppColors.primary,
+                            disabledBackgroundColor: Colors.grey.shade300,
+                            disabledForegroundColor: Colors.grey.shade600,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: Text(AppText.signup),
+                          child: Text(
+                              _isLoading ? 'Kayıt yapılıyor...' : l10n.signUp),
                         ),
                       ],
                     ),

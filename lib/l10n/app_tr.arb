@@ -47,6 +47,7 @@
   "takePicture": "Fotoğraf Çek",
   "selectFromGallery": "Galeriden Seç",
   "analyzing": "Bitki analiz ediliyor...",
+  "analyzingInfo": "Bitkiniz yapay zeka ile analiz ediliyor. Bu işlem birkaç saniye sürebilir.",
   "plantInfo": "Bitki Bilgileri",
   "scientificName": "Bilimsel İsim",
   "lightRequirement": "Işık İhtiyacı",

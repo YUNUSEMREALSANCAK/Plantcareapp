@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../plant_recognition/presentation/cubit/plant_recognition_cubit.dart';
 import '../../../plant_recognition/presentation/pages/plant_recognition_result_page.dart';
+import '../../../plant_recognition/presentation/pages/loading_screen.dart';
 import '../../../plants/presentation/cubit/plant_cubit.dart';
 import '../../../plants/presentation/cubit/plant_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -246,20 +247,25 @@ class _HomePageState extends State<HomePage> {
                       if (image != null && mounted) {
                         final imageFile = File(image.path);
 
-                        // Bitki tanıma işlemini başlat
-                        await context
-                            .read<PlantRecognitionCubit>()
-                            .recognizePlant(imageFile);
-
-                        // Sonuç sayfasına git
+                        // Önce yükleme ekranına git
                         if (mounted) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const PlantRecognitionResultPage(),
+                                  const PlantRecognitionLoadingScreen(),
                             ),
                           );
+                        }
+
+                        // Bitki tanıma işlemini başlat
+                        try {
+                          await context
+                              .read<PlantRecognitionCubit>()
+                              .recognizePlant(imageFile);
+                        } catch (e) {
+                          // Hata durumunda yükleme ekranı zaten sonuç sayfasına yönlendirecek
+                          print('Bitki tanıma hatası: $e');
                         }
                       }
                     },

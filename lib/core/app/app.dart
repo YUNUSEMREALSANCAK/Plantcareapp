@@ -69,14 +69,27 @@ class App extends StatelessWidget {
                   Locale('en'),
                   Locale('tr'),
                 ],
-                home: state.status == AuthStatus.authenticated
-                    ? const MainApp()
-                    : const LoginPage(),
+                home: _buildHomeScreen(state),
+                routes: {
+                  '/home': (context) => const MainApp(),
+                  '/login': (context) => const LoginPage(),
+                },
               );
             },
           );
         },
       ),
     );
+  }
+
+  // Kullanıcı durumuna göre ana ekranı belirle
+  Widget _buildHomeScreen(AuthState state) {
+    // Kullanıcı kimliği doğrulanmışsa ana uygulamayı göster
+    if (state.status == AuthStatus.authenticated && state.user != null) {
+      return const MainApp();
+    }
+
+    // Diğer tüm durumlarda giriş sayfasını göster
+    return const LoginPage();
   }
 }

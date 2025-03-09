@@ -47,6 +47,7 @@
   "takePicture": "Take Picture",
   "selectFromGallery": "Select from Gallery",
   "analyzing": "Analyzing plant...",
+  "analyzingInfo": "Your plant is being analyzed with artificial intelligence. This process may take a few seconds.",
   "plantInfo": "Plant Information",
   "scientificName": "Scientific Name",
   "lightRequirement": "Light Requirement",

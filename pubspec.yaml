@@ -76,6 +76,7 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.2
+  lottie: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -107,6 +108,7 @@ flutter:
   assets:
     - .env
     - assets/images/login_page_img.png
+    - assets/animations/
   
   generate: true  # Çoklu dil desteği için gerekli
 

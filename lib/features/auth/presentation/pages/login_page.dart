@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,12 +21,39 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   String? _errorText;
   bool _isLoading = false;
+  bool _isFormValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_validateForm);
+    _passwordController.addListener(_validateForm);
+  }
 
   @override
   void dispose() {
+    _emailController.removeListener(_validateForm);
+    _passwordController.removeListener(_validateForm);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _validateForm() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    setState(() {
+      _isFormValid = email.isNotEmpty &&
+          _isValidEmail(email) &&
+          password.isNotEmpty &&
+          password.length >= 6;
+    });
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegExp.hasMatch(email);
   }
 
   void _handleLogin() {
@@ -37,16 +65,28 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    if (!_isValidEmail(email)) {
+      setState(() => _errorText = 'Geçerli bir email adresi giriniz');
+      return;
+    }
+
     if (password.isEmpty) {
       setState(() => _errorText = 'Şifre alanı boş bırakılamaz');
       return;
     }
 
+    if (password.length < 6) {
+      setState(() => _errorText = 'Şifre en az 6 karakter olmalıdır');
+      return;
+    }
+
     // Hata mesajını temizle
-    setState(() => _errorText = null);
+    setState(() {
+      _errorText = null;
+      _isLoading = true;
+    });
 
     // Login işlemini başlat
-    setState(() => _isLoading = true);
     context
         .read<AuthCubit>()
         .signIn(
@@ -54,16 +94,14 @@ class _LoginPageState extends State<LoginPage> {
           password: password,
         )
         .then((_) {
+      // AuthCubit içinde durum değişikliği dinlendiği için
+      // burada bir şey yapmaya gerek yok
       setState(() => _isLoading = false);
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
-        );
-      }
     }).catchError((e) {
-      setState(() => _errorText = _getErrorMessage(e));
+      setState(() {
+        _isLoading = false;
+        _errorText = _getErrorMessage(e);
+      });
       // Hata bildirimi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -80,20 +118,23 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   String _getErrorMessage(dynamic e) {
+    final l10n = AppLocalizations.of(context)!;
     if (e is FirebaseAuthException) {
       if (e.code == 'user-not-found') {
-        return 'No user found with this email';
+        return 'Bu email ile kayıtlı kullanıcı bulunamadı';
       } else if (e.code == 'wrong-password') {
-        return 'Wrong password';
+        return 'Hatalı şifre';
       } else {
-        return 'Authentication error: ${e.message}';
+        return 'Kimlik doğrulama hatası: ${e.message}';
       }
     }
-    return 'An unexpected error occurred';
+    return 'Beklenmeyen bir hata oluştu';
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
@@ -103,7 +144,10 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         } else if (state.status == AuthStatus.error) {
-          setState(() => _errorText = state.errorMessage);
+          setState(() {
+            _isLoading = false;
+            _errorText = state.errorMessage;
+          });
           // Hata bildirimi
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -136,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  AppText.loginWithEmail,
+                  l10n.login,
                   style: const TextStyle(
                     color: AppColors.white,
                     fontSize: 20,
@@ -148,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Email TextField
                 _CustomTextField(
                   controller: _emailController,
-                  hintText: AppText.email,
+                  hintText: l10n.email,
                   prefixIcon: const Text(
                     '@',
                     style: TextStyle(
@@ -161,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Password TextField
                 _CustomTextField(
                   controller: _passwordController,
-                  hintText: AppText.password,
+                  hintText: l10n.password,
                   prefixIcon: const Icon(
                     Icons.lock_outline,
                     color: AppColors.textLight,
@@ -172,16 +216,18 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 // Login Button
                 ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _isLoading || !_isFormValid ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.white,
                     foregroundColor: AppColors.primary,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(_isLoading ? 'Logging in...' : AppText.login),
+                  child: Text(_isLoading ? 'Giriş yapılıyor...' : l10n.login),
                 ),
                 const SizedBox(height: 16),
                 // Back Button
@@ -207,7 +253,7 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     },
                     child: Text(
-                      AppText.noAccount,
+                      l10n.dontHaveAccount,
                       style: const TextStyle(
                         color: AppColors.white,
                         fontSize: 14,
