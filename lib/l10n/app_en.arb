@@ -149,5 +149,24 @@
     "placeholders": {
       "language": {}
     }
+  },
+  "plantRecognitionResult": "Plant Recognition Result",
+  "plantAnalysisResult": "Plant Analysis Result",
+  "noResultFound": "No result found",
+  "tryAgain": "Try Again",
+  "plantNameLabel": "Plant Name",
+  "temperature": "Temperature",
+  "watering": "Watering",
+  "light": "Light",
+  "soil": "Soil",
+  "detailedApiResponse": "Detailed API Response",
+  "missingPlantInfo": "Plant information is missing, could not be saved.",
+  "userSessionNotFound": "User session not found",
+  "plantSavedSuccessfully": "Plant saved successfully",
+  "plantSavingError": "Error: {message}",
+  "@plantSavingError": {
+    "placeholders": {
+      "message": {}
+    }
   }
 } 

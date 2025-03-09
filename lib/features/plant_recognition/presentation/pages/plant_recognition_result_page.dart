@@ -6,20 +6,31 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../features/plants/presentation/cubit/plant_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
+import '../../../../features/plants/presentation/pages/plants_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class PlantRecognitionResultPage extends StatelessWidget {
+class PlantRecognitionResultPage extends StatefulWidget {
   const PlantRecognitionResultPage({super.key});
 
   @override
+  State<PlantRecognitionResultPage> createState() =>
+      _PlantRecognitionResultPageState();
+}
+
+class _PlantRecognitionResultPageState
+    extends State<PlantRecognitionResultPage> {
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.primary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Bitki Tanıma Sonucu',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.plantRecognitionResult,
+          style: const TextStyle(color: Colors.white),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -66,7 +77,7 @@ class PlantRecognitionResultPage extends StatelessWidget {
                         backgroundColor: Colors.white,
                         foregroundColor: AppColors.primary,
                       ),
-                      child: const Text('Tekrar Dene'),
+                      child: Text(l10n.tryAgain),
                     ),
                   ],
                 ),
@@ -101,16 +112,16 @@ class PlantRecognitionResultPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Bitki Analiz Sonucu',
-                          style: TextStyle(
+                        Text(
+                          l10n.plantAnalysisResult,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildPlantInfoCard(state.result ?? 'Sonuç bulunamadı'),
+                        _buildPlantInfoCard(state.result ?? l10n.noResultFound),
                       ],
                     ),
                   ),
@@ -129,9 +140,9 @@ class PlantRecognitionResultPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Bitkiyi Kaydet',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.savePlant,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -142,10 +153,10 @@ class PlantRecognitionResultPage extends StatelessWidget {
               ),
             );
           } else {
-            return const Center(
+            return Center(
               child: Text(
-                'Bir hata oluştu',
-                style: TextStyle(color: Colors.white),
+                l10n.error,
+                style: const TextStyle(color: Colors.white),
               ),
             );
           }
@@ -155,10 +166,12 @@ class PlantRecognitionResultPage extends StatelessWidget {
   }
 
   void _savePlant(BuildContext context, PlantRecognitionState state) async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (state.result == null || state.selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bitki bilgileri eksik, kaydedilemedi.'),
+        SnackBar(
+          content: Text(l10n.missingPlantInfo),
           backgroundColor: Colors.red,
         ),
       );
@@ -169,7 +182,7 @@ class PlantRecognitionResultPage extends StatelessWidget {
       // Kullanıcı kontrolü
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        throw Exception('Kullanıcı oturumu bulunamadı');
+        throw Exception(l10n.userSessionNotFound);
       }
 
       // API sonucundan bilgileri çıkar
@@ -205,10 +218,10 @@ class PlantRecognitionResultPage extends StatelessWidget {
             description: _createDetailedDescription(plantInfo),
             wateringFrequency: plantInfo.wateringFrequency.isNotEmpty
                 ? plantInfo.wateringFrequency
-                : "Belirtilmedi",
+                : l10n.notSpecified,
             temperatureRange: plantInfo.temperatureRange.isNotEmpty
                 ? plantInfo.temperatureRange
-                : "Belirtilmedi",
+                : l10n.notSpecified,
             ownershipDuration: 'Yeni eklendi',
             imageFile: state.selectedImage,
             userId: currentUser.uid,
@@ -220,15 +233,21 @@ class PlantRecognitionResultPage extends StatelessWidget {
       // Başarılı mesajı göster
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bitki başarıyla kaydedildi'),
+          SnackBar(
+            content: Text(l10n.plantSavedSuccessfully),
             backgroundColor: Colors.green,
           ),
         );
 
-        // Önceki sayfaya dön
-        Navigator.pop(context);
-        Navigator.pop(context); // İki kez pop yaparak ana sayfaya dön
+        // Güvenli navigasyon: Ana uygulamaya dön ve Plants sekmesini seç
+        if (context.mounted) {
+          // MainApp'e yönlendir ve Plants sekmesini seç
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false,
+            arguments: 1, // Plants sekmesinin indeksi
+          );
+        }
       }
     } catch (e) {
       print('Bitki kaydetme hatası: $e');
@@ -593,6 +612,8 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
 
   // Bitki bilgilerini kartlar halinde göster
   Widget _buildPlantInfoCard(String apiResult) {
+    final l10n = AppLocalizations.of(context)!;
+
     // API sonucundan bilgileri çıkar
     final PlantInfo plantInfo = _extractPlantInfo(apiResult);
 
@@ -610,9 +631,9 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Bitki Adı',
-                style: TextStyle(
+              Text(
+                l10n.plantNameLabel,
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -627,7 +648,7 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (plantInfo.scientificName != 'Belirtilmedi') ...[
+              if (plantInfo.scientificName != l10n.notSpecified) ...[
                 const SizedBox(height: 4),
                 Text(
                   _cleanMarkdown(plantInfo.scientificName),
@@ -648,13 +669,13 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
         Row(
           children: [
             Expanded(
-              child: _buildInfoCard(
-                  'Sıcaklık', plantInfo.temperatureRange, Icons.thermostat),
+              child: _buildInfoCard(l10n.temperature,
+                  plantInfo.temperatureRange, Icons.thermostat),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildInfoCard(
-                  'Sulama', plantInfo.wateringFrequency, Icons.water_drop),
+                  l10n.watering, plantInfo.wateringFrequency, Icons.water_drop),
             ),
           ],
         ),
@@ -665,12 +686,12 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
           children: [
             Expanded(
               child: _buildInfoCard(
-                  'Işık', plantInfo.lightRequirement, Icons.wb_sunny),
+                  l10n.light, plantInfo.lightRequirement, Icons.wb_sunny),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildInfoCard(
-                  'Toprak', plantInfo.soilPreference, Icons.landscape),
+                  l10n.soil, plantInfo.soilPreference, Icons.landscape),
             ),
           ],
         ),
@@ -678,7 +699,7 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
         const SizedBox(height: 16),
 
         // Genel bilgiler
-        if (plantInfo.generalInfo != 'Belirtilmedi') ...[
+        if (plantInfo.generalInfo != l10n.notSpecified) ...[
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -689,9 +710,9 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Genel Bilgiler',
-                  style: TextStyle(
+                Text(
+                  l10n.generalInfo,
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -714,9 +735,9 @@ Bu bilgiler yapay zeka tarafından oluşturulmuştur ve genel bilgi amaçlıdır
         // Tam API yanıtını göster
         const SizedBox(height: 24),
         ExpansionTile(
-          title: const Text(
-            'Detaylı API Yanıtı',
-            style: TextStyle(
+          title: Text(
+            l10n.detailedApiResponse,
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
             ),

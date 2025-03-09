@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextField extends StatelessWidget {
   final String hintText;
@@ -22,11 +21,14 @@ class CustomTextField extends StatelessWidget {
       ),
       child: TextField(
         obscureText: isPassword,
-        style: GoogleFonts.poppins(),
+        style: const TextStyle(
+          fontFamily: 'Roboto',
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: GoogleFonts.poppins(
+          hintStyle: TextStyle(
             color: Colors.grey[400],
+            fontFamily: 'Roboto',
           ),
           prefixIcon: Icon(
             icon,

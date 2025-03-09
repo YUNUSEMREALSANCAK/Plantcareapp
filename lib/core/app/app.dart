@@ -71,7 +71,18 @@ class App extends StatelessWidget {
                 ],
                 home: _buildHomeScreen(state),
                 routes: {
-                  '/home': (context) => const MainApp(),
+                  '/home': (context) {
+                    // Route argümanlarını kontrol et
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    int initialIndex = 0;
+
+                    // Eğer argüman varsa ve int tipindeyse, initialIndex olarak kullan
+                    if (args != null && args is int) {
+                      initialIndex = args;
+                    }
+
+                    return MainApp(initialIndex: initialIndex);
+                  },
                   '/login': (context) => const LoginPage(),
                 },
               );
@@ -86,7 +97,7 @@ class App extends StatelessWidget {
   Widget _buildHomeScreen(AuthState state) {
     // Kullanıcı kimliği doğrulanmışsa ana uygulamayı göster
     if (state.status == AuthStatus.authenticated && state.user != null) {
-      return const MainApp();
+      return const MainApp(initialIndex: 0);
     }
 
     // Diğer tüm durumlarda giriş sayfasını göster

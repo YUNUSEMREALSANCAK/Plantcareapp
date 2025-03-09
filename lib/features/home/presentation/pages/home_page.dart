@@ -417,47 +417,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: AppColors.primary,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
-          currentIndex: 0,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          onTap: (index) {
-            if (index == 1) {
-              Navigator.pushReplacement(
-                context,
-                RouteTransitions.slidePageRoute(
-                  page: const PlantsPage(),
-                  slideFromRight: true,
-                ),
-              );
-            } else if (index == 2) {
-              Navigator.pushReplacement(
-                context,
-                RouteTransitions.slidePageRoute(
-                  page: const ProfilePage(),
-                  slideFromRight: true,
-                ),
-              );
-            }
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: l10n.home,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.local_florist),
-              label: l10n.plants,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.person_outline),
-              label: l10n.profile,
-            ),
-          ],
-        ),
       ),
     );
   }

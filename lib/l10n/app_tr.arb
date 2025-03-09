@@ -1,7 +1,7 @@
 {
   "appTitle": "MyPlant",
   "home": "Ana Sayfa",
-  "plants": "Bitkilerim",
+  "plants": "Bitkiler",
   "myPlants": "Bitkilerim",
   "profile": "Profil",
   "login": "Giriş Yap",
@@ -43,13 +43,13 @@
   "appLanguage": "Uygulama Dili",
   "turkish": "Türkçe",
   "english": "İngilizce",
-  "recognizePlant": "Bitkimi Tanı",
+  "recognizePlant": "Bitki Tanıma",
   "takePicture": "Fotoğraf Çek",
   "selectFromGallery": "Galeriden Seç",
   "analyzing": "Bitki analiz ediliyor...",
   "analyzingInfo": "Bitkiniz yapay zeka ile analiz ediliyor. Bu işlem birkaç saniye sürebilir.",
   "plantInfo": "Bitki Bilgileri",
-  "scientificName": "Bilimsel İsim",
+  "scientificName": "Bilimsel Adı",
   "lightRequirement": "Işık İhtiyacı",
   "soilPreference": "Toprak Tercihi",
   "generalInfo": "Genel Bilgiler",
@@ -80,8 +80,8 @@
   "temperature": "Sıcaklık",
   "humidity": "Nem",
   "notifications": "Bildirimler",
-  "noNotifications": "Henüz bildirim bulunmuyor. Bitki ekleyerek sulama ve sıcaklık bildirimlerini görüntüleyebilirsiniz.",
-  "noNotificationsToday": "Bugün için bildirim bulunmuyor. Tüm bitkileriniz iyi durumda!",
+  "noNotifications": "Henüz bildirim yok. Sulama ve sıcaklık bildirimleri görmek için bitki ekleyin.",
+  "noNotificationsToday": "Bugün için bildirim yok. Tüm bitkileriniz iyi durumda!",
   "wateringTime": "{plantName} Sulama Zamanı",
   "@wateringTime": {
     "placeholders": {
@@ -100,7 +100,7 @@
       "plantName": {}
     }
   },
-  "lowTemperatureMessage": "Mevcut sıcaklık ({temp}°C), {plantName} için çok düşük. Minimum {minTemp}°C olmalı.",
+  "lowTemperatureMessage": "Mevcut sıcaklık ({temp}°C) {plantName} için çok düşük. En az {minTemp}°C olmalıdır.",
   "@lowTemperatureMessage": {
     "placeholders": {
       "temp": {},
@@ -114,7 +114,7 @@
       "plantName": {}
     }
   },
-  "highTemperatureMessage": "Mevcut sıcaklık ({temp}°C), {plantName} için çok yüksek. Maksimum {maxTemp}°C olmalı.",
+  "highTemperatureMessage": "Mevcut sıcaklık ({temp}°C) {plantName} için çok yüksek. En fazla {maxTemp}°C olmalıdır.",
   "@highTemperatureMessage": {
     "placeholders": {
       "temp": {},
@@ -122,16 +122,16 @@
       "maxTemp": {}
     }
   },
-  "noPlantsYet": "Henüz bitki eklenmemiş",
+  "noPlantsYet": "Henüz bitki eklenmedi",
   "user": "Kullanıcı",
   "notSpecified": "Belirtilmedi",
-  "maxTemperature": "En fazla {temp}°C",
+  "maxTemperature": "Maks {temp}°C",
   "@maxTemperature": {
     "placeholders": {
       "temp": {}
     }
   },
-  "minTemperature": "En az {temp}°C",
+  "minTemperature": "Min {temp}°C",
   "@minTemperature": {
     "placeholders": {
       "temp": {}
@@ -148,6 +148,24 @@
   "@languageChanged": {
     "placeholders": {
       "language": {}
+    }
+  },
+  "plantRecognitionResult": "Bitki Tanıma Sonucu",
+  "plantAnalysisResult": "Bitki Analiz Sonucu",
+  "noResultFound": "Sonuç bulunamadı",
+  "tryAgain": "Tekrar Dene",
+  "plantNameLabel": "Bitki Adı",
+  "watering": "Sulama",
+  "light": "Işık",
+  "soil": "Toprak",
+  "detailedApiResponse": "Detaylı API Yanıtı",
+  "missingPlantInfo": "Bitki bilgileri eksik, kaydedilemedi.",
+  "userSessionNotFound": "Kullanıcı oturumu bulunamadı",
+  "plantSavedSuccessfully": "Bitki başarıyla kaydedildi",
+  "plantSavingError": "Hata: {message}",
+  "@plantSavingError": {
+    "placeholders": {
+      "message": {}
     }
   }
 } 

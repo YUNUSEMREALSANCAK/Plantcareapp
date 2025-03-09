@@ -45,7 +45,6 @@ dependencies:
   equatable: ^2.0.5
   
   # UI
-  google_fonts: ^6.1.0
   flutter_animate: ^4.5.0
   image_picker: ^1.0.4
 
@@ -62,21 +61,18 @@ dependencies:
 
   # Added from the code block
   http: ^1.1.0
-  openai_dart: ^0.4.5
-
+  
   # Added from the code block
   intl: ^0.19.0
 
   # Added from the code block
   cached_network_image: ^3.3.0
-  flutter_displaymode: ^0.6.0  # Yüksek yenileme hızlı ekranlar için
-
+  
   # Added from the code block
   flutter_markdown: ^0.6.18
   
   # Storage
   shared_preferences: ^2.2.2
-  lottie: ^3.2.0
 
 dev_dependencies:
   flutter_test:

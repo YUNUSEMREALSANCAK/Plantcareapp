@@ -145,46 +145,6 @@ class _PlantsPageState extends State<PlantsPage> {
             }
           },
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: AppColors.background,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
-          currentIndex: 1,
-          type: BottomNavigationBarType.fixed,
-          onTap: (index) {
-            if (index == 0) {
-              Navigator.pushReplacement(
-                context,
-                RouteTransitions.slidePageRoute(
-                  page: const HomePage(),
-                  slideFromRight: false,
-                ),
-              );
-            } else if (index == 2) {
-              Navigator.pushReplacement(
-                context,
-                RouteTransitions.slidePageRoute(
-                  page: const ProfilePage(),
-                  slideFromRight: true,
-                ),
-              );
-            }
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: l10n.home,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.local_florist),
-              label: l10n.plants,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.person_outline),
-              label: l10n.profile,
-            ),
-          ],
-        ),
       ),
     );
   }

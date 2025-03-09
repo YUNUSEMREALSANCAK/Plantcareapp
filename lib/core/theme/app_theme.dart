@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -8,7 +7,7 @@ class AppTheme {
           seedColor: AppColors.primary,
           background: AppColors.background,
         ),
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        fontFamily: 'Roboto',
         useMaterial3: true,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -37,20 +36,23 @@ class AppTheme {
         ),
       );
 
-  static TextStyle get titleLarge => GoogleFonts.poppins(
+  static TextStyle get titleLarge => const TextStyle(
+        fontFamily: 'Roboto',
         fontSize: 32,
         fontWeight: FontWeight.bold,
         color: AppColors.white,
         letterSpacing: -0.5,
       );
 
-  static TextStyle get buttonText => GoogleFonts.poppins(
+  static TextStyle get buttonText => const TextStyle(
+        fontFamily: 'Roboto',
         fontSize: 16,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,
       );
 
-  static TextStyle get linkText => GoogleFonts.poppins(
+  static TextStyle get linkText => const TextStyle(
+        fontFamily: 'Roboto',
         fontSize: 14,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
